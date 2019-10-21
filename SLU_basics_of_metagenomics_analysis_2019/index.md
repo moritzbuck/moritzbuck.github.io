@@ -18,8 +18,8 @@ Held in Uppsala November 20-22, 2017.
 
 ## Helpful Things
 
-[Linux cheat sheet](../common/images/linux-cheat-sheet.pdf)  
-[UPPMAX cheat sheet](../common/images/uppmax-cheat-sheet.png)  
+[Linux cheat sheet](https://scilifelab.github.io/courses/common/images/linux-cheat-sheet.pdf)  
+[UPPMAX cheat sheet](https://scilifelab.github.io/courses/common/images/uppmax-cheat-sheet.png)  
 [How to create a webexport in your project](https://www.uppmax.uu.se/webexport-guide)  
 
 ## External Resources
