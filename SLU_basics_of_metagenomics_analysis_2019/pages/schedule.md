@@ -6,10 +6,10 @@ title:  'Schedule'
 # Schedule
 ---
 
-#### This course is given at Navet (E10) at BMC. Click the heading of a topic to see the lecture slides or lab instructions.
+#### This course is given at XXX. Click the heading of a topic to see the lecture slides or lab instructions.
 
-Leading the tutorials will be Moritz Buck
-Assisting in the tutorials will be : Mahesh Binzer-Panchal, Sari Peura, Lucile Soler
+Leading the tutorials will be XXX
+Assisting in the tutorials will be : XXX
 
 ### Monday 20th  
 

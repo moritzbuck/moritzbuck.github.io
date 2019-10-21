@@ -29,7 +29,7 @@ You should at least go through the exercises in the tutorial, no need to know it
 
 **Additional links**
 
-* [**a horribly cute terminal tutorial** ](http://unixmages.com/)
+* [**a horribly cute terminal tutorial/book** ](http://unixmages.com/the-first-book/), if you do not like cheesy stuff, abstain
 
 If you feel uncertain how to work in a terminal window it is important that you go through this tutorial before you start.
  
