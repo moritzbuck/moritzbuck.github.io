@@ -1,5 +1,5 @@
 ---
-layout: default
+layout: architect
 title:  'Moritz Buck --- Metagenomics and stuff!'
 ---
  
