@@ -1,5 +1,5 @@
 ---
-layout: hacker
+layout: default
 title:  'Moritz Buck --- Metagenomics and stuff!'
 ---
  
