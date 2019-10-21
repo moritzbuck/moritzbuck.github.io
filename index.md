@@ -1,5 +1,5 @@
 ---
-layout: architect
+layout: hacker
 title:  'Moritz Buck --- Metagenomics and stuff!'
 ---
  
