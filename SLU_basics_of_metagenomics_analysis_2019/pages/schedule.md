@@ -3,7 +3,7 @@ layout: default
 title:  'Schedule'
 ---
 
-# Schedule
+# (Rough) Schedule
 ---
 
 #### This course is given at XXX. Click the heading of a topic to see the lecture slides or lab instructions.
