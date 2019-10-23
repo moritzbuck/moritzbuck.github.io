@@ -1,18 +1,18 @@
 ---
 layout: default
-title:  'Metagenomics Workshop - November 2016'
+title:  'Metagenomics Workshop - November 2019'
 ---
  
 
 # Introduction to Metagenomics
 ---
 
-Held in Uppsala November 20-22, 2017.  
+Held at SLU (Swedish University of Agricultural Sciences), Uppsala,  November 11-15, 2019.  
 
 ## Important Links
 
 [Pre-course material](pages/precourse.md)  
-[Course material](pages/tutorial.md)  
+<!--- [Course material](pages/tutorial.md) -->  
 [Schedule](pages/schedule.md)<br/>
 [VirtualWhiteboardThing](https://etherpad.wikimedia.org/p/SLU_metagenomics_course_2019)
 
