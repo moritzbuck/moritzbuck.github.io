@@ -12,7 +12,7 @@ Additionally, the course will run on the Uppsala Multidisciplinary Center for Ad
 
 ## Unix/Linux Tutorial
 
-**The three first part from the [UNIX Tutorial for Beginners](../../ngsintro/common/unixtut/)**  
+**The three first part from the [UNIX Tutorial for Beginners](https://scilifelab.github.io/courses/ngsintro/common/unixtut/)**  
 
 * [**Introduction**](https://scilifelab.github.io/courses/ngsintro/common/unixtut/unixintro.html)  
 * [**chapter 1**](https://scilifelab.github.io/courses/ngsintro/common/unixtut/unix1.html)  
@@ -40,7 +40,12 @@ touch /proj/g2019027/public/YOUR_USERNAME_FOR_UPPMAX
 
 If you struggle with this material I advice you to explore some of these ressources:
 
-* [**Codeacademy's** "Learn the Command Line"](https://www.codecademy.com/learn/learn-the-command-line)
+<!-- * [**Codeacademy's** "Learn the Command Line"](https://www.codecademy.com/learn/learn-the-command-line)-->
+* [linuxcommand.org](http://linuxcommand.org/)
+
+* [Chadwick's extensive tutorial](https://ryanstutorials.net/linuxtutorial/)
 
 * [**a horribly cute terminal tutorial/book** ](http://unixmages.com/the-first-book/), if you do not like cheesy stuff, abstain
+
+
  
