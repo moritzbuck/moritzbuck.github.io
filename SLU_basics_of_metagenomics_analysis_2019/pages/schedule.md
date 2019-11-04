@@ -6,53 +6,48 @@ title:  'Schedule'
 # (Rough) Schedule
 ---
 
-#### This course is given at XXX. Click the heading of a topic to see the lecture slides or lab instructions.
-
-Leading the tutorials will be XXX
-Assisting in the tutorials will be : XXX
+#### This course is given in SLU, campus Ultuna in Uppsala. Click the heading of a topic to see the lecture slides or lab instructions. We will have breaks too, no worries. 
 
 ### Monday 11th  
 
-Room:  
+Room: Tentamensal 2, Undervisningshuset
 
-* Monday 9-12: Introduction to metagenomics (lecture)
-* Monday 12-13: Lunch
-* Monday 13-17: Visit of SciLifeLab and lecture on sequencing tech
+* 9-9.15      : Introduction (Sari Peura)
+* 9.15-10.30     : What is metagenomics? (Chris Greening)
+* 10.30-12    : Howto of metagenomics analysis (Moritz Buck)
+* 12-13       : Lunch
+* 13-16       : Visit of SciLifeLab
 
 ### Tuesday 12th  
 
-Room:      
- 
-* Tuesday 9-10  : read quality and processing (lecture, Domenico)
-* Tuesday 10-11 : assembly (lecture, Moritz)
-* Tuesday 11-12 : tutorial
-* Tuesday 12-13 : lunch
-* Tuesday 13-17 : tutorial
+Room: Lärosal P, Ulls hus      
 
-* Tuesday 18-20: Course dinner Messob (Sturegatan 4A, Uppsala)
+* 9-12  : Quality Control Lecture and tutorial (Domenico Simone, TAs: Moritz and Sari)
+* 12-13 : Lunch
+* 13-16 : Assembly Lecture and tutorial (Moritz Buck, TAs: Domenico and Sari)
 
 ### Wednesday 13th  
 
-Room:      
- 
-* Tuesday 9-11  : lecture
-* Tuesday 11-12 : tutorial
-* Tuesday 12-13 : lunch
-* Tuesday 13-17 : tutorial
+Room: Lärosal Y, Ulls hus
+
+*  9-12  : Binning Lecture and tutorial (Moritz Buck, TA: Domenico)
+*  12-13 : lunch
+*  13-16 : Tutorials continued (Moritz, TAs: Domenico  and Sari)
 
 ### Thursday 14th  
 
-Room:      
- 
-* Tuesday 9-11  : lecture
-* Tuesday 11-12 : tutorial
-* Tuesday 12-13 : lunch
-* Tuesday 13-17 : tutorial
+Room: Hörsal V, Ulls hus \& C216, BioCenter
+
+*  9-12  : Metagenome and genome annotation Lecture and tutorial (Maliheh Mehrshad, TAs: Chris and Domenico)
+*  12-13 : lunch
+*  13-16 : Databases, phylogenies and gene annotation Lecture and tutorial (Chris Jones, TAs: Maliheh and Domenico)
 
 ### Friday 14th  
 
-Room:      
- 
-* Tuesday 9-12  : tutorial
-* Tuesday 12-13 : lunch
-* Tuesday 13-17 : Q&A and project discussion
+Room: Prima, Ultunabiblioteket  
+
+* 9-9.30      : Data submission (Maliheh Mehrshad)
+* 9.30-11.30  : Stats of metagenomics and study design (Domenico Simone)
+* 11.30-12    : Pitfalls and challenges of metagenomics (Sari Peura)
+* 12-13       : lunch
+* 13-16       : Q&A and project discussion (Everyone)
