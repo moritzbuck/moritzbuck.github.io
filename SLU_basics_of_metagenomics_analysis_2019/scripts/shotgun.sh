@@ -1,8 +1,3 @@
-9-915, meetandgreet
-1.15hrs of Chris greening on applied metagenomics
-
-
-
 module load bioinfo-tools
 module load FastQC
 module load trimmomatic
@@ -112,7 +107,7 @@ do
   fi
 done
 
-for f in `ls`; 
+for f in `ls`;
 do
 if [[ ! -f ${f}/${f}.emapper.annotations ]]
   then

@@ -67,7 +67,6 @@ module load bioinfo-tools
 Modules are loaded on Rackham until you disconnect from your terminal, so one you loaded them you do not need to rerun these commands. But if you disconnect, they will not be loaded anymore, so you will need to reload on you next connect!
 ## Processing your reads
 
-
 ### QC-ing
 
  As mentioned, the raw-data we will use is available in the `/proj/g2019027/raw_data`. This is unpublished data from a lake in Switzerland, multiple time points as well as depth points. We have already preprocessed and subset it some to guarantee some quality of asssembly, but let's check it out!
@@ -114,9 +113,7 @@ For the purpose of this tutorial we will only use the `megahit`-assembler. This 
 We will start with simple assemblies of our libraries, meaning that we consider our libraries all independent and assemble them as such.
 
 > Using the `megahit`-assembler
-
 > Assemble your the reads of your sample!
-
 > Optional : How would you run a different assembly?
 
 
@@ -158,65 +155,56 @@ Rscript my_script.R
 
  > run the script
 
-Hmmm, you probably got an error. Many scripting languages have systems to load additional packages of functions. The system used in python is called `pip`. So you can install packages for `python` doing:
+Hmmm, you probably got errors. Many scripting languages have systems to load additional packages of functions. For R you have to use the `install.packages` function to get packages from CRAN, also there is something called `bioconductor`.
 
-```bash
-pip install my_package
-```
+> Open R
+>
+> install the missing packages, try to run the script
 
-However this normally needs superuser permission, so you will have to run this with the `--user` option, which will install the package into your `home`
+Probably you still got errors ... Well it's probably time to open the script and have a look.
 
-> Using `pip`
-
-> install the missing packages and run the script, use it to get some basic info about your assembly
-
+> Fix the script, the error messages obtained should give you an idea of the problem
+>
+> Now it should run, you should get some basic info about your assembly, as well as a pretty plot
+>
 > Optional : Personalize the script a bit. And run the script with all the assemblies.
 
 We have now some basic data about our few simple assemblies.
 
-> Any particular feelings about the obtained assemblies?
-
-Some of the assemblies as you can see have decent mapping rate, however, the contigs composing them are not very good. Often, mostly if sequencing depth, things assemble well, but the lack of coverage breaks the assembly in many places. Also certain assemblers output also very small contigs which are often not usable for downstream analyses, but give an impression of high-mapping rates. Hence, assemblies are often length filtered. I am sure there are plenty of tools to do that, we however provided a home made script again, it also cleans up the names of the contigs a bit.
-
-> Using the `fasta_filter.py` script
-
-> Filter out small contigs from your assembly
-
-> Optional : ammend the script to give personalised names to your contigs
-
-Now, we just have to see how the characteristics of this 'new'-assembly are.
-
-> Re-compute mapping rate and metagenome-characteristics
-
+> Any particular feelings about the obtained assemblies? Also, what about the plot?!
 
 #### Alternate assembly.
 
-So some assemblies are OK, some are not ... we can now make some other assemblies. We could normalize the reads to remove micro-diversity and errors. We could split the reads into different subsets (e.g. eukaryotic and prokarotic for example). Or coassemble multiple libraries together.
+So we are "lucky" our assemblies look kinda nice ... we can now make some other assemblies. We could normalize the reads to remove micro-diversity and errors. We could split the reads into different subsets (e.g. eukaryotic and prokarotic for example). Or coassemble multiple libraries together.
 
-> Discuss some strategies, and make an other assembly.
-> Run the mapping and the `python`-script once it is done
-
+> Discuss some strategies
+>
+> OPTIONAL : make an other assembly.
 
 ### Binning the contigs
 
-We are more interested in extracting genomes in our analysis, so we will use a binning approach with our assembly. To extract genomic bins, or Metagenome Assembled Genomes (MAGs), or Genomes From Metagenomes (GFMs), we will use the `MetaBAT` tool.
+Nice, we have genomic-data with some patterns in it. Now we want to extract genomes from it, so we will use a binning approach with our assembly. To extract genomic bins, or Metagenome Assembled Genomes (MAGs), or Genomes From Metagenomes (GFMs), we will use the `MetaBAT` tool.
 
 This tool will need the sorted BAM-files we made to run.
 
-> For you genomic-assembly of choice. Collect sorted indexed BAM-files corresponding to that assembly in a folder. (Remember the `bamscript=` option of `bbmap`)
-
+> For you genomic-assembly of choice. Cfind the sorted indexed BAM-file you made assembly in a folder. (Remember the `bamscript=` option of `bbmap`), now is the time!
+>
 > Using `runMetaBat.sh`, loaded with `module load MetaBaT`. Have a look at the FASTA-files generated.
-
-> Optional : run the binning on an other assembly!
+>
+> Optional : run the binning on an other assembly, or with more mappings!
 
 ##### Evaluating bins
 
-Now we each hopefully got a number of bins. Meaning that the assembly has been split into bags of contigs that somehow look/vary similarly. This process is however far from perfect, some bins will be-merged MAGs, others will contain viral data, or Eukaryotic chromosome, or simply trash.
+Now we each should have all gotten a number of bins. Meaning that the assembly has been split into bags of contigs that somehow look/vary similarly. This process is however far from perfect, some bins will be-merged MAGs, others will contain viral data, or Eukaryotic chromosome, or simply trash.
 
 We need to evaluate the bins for that. A very simple first filter is to remove bins that are too small or too large.
 
-> compute rough size estimates of your bins (hint, the file size correlate well with the genome size), and pic a bin that has a size more or less corresponding to a microbial genome.
+> compute rough size estimates of your bins (hint, the file size correlate well with the genome size)
 
+Also, the `R`-script previously used colours by bin (yey!), so let's make our plot prettier:
+
+> Change the script so it finds your bins, and run it again, it should make the figure prettier!
+>
 > optional : compute other stats on these bins, let your imagination run wild (or maybe use the script I provided earlier)
 
 Now we should all have a bin we hope is a genome! To check this we will use a tool called `checkm`, fundamentally it uses single copy marker genes to check if a bin/MAG is complete, and if it is contaminated.
@@ -226,40 +214,47 @@ Now we should all have a bin we hope is a genome! To check this we will use a to
 Once it seams like it is running we want to run the `lineage_wf`, the documentation of `checkm` is a bit more confusing than other tools... So I advice you to look at [this specific page](https://github.com/Ecogenomics/CheckM/wiki/Quick-Start) and don't get lost in the others!
 
 > Using the `lineage_wf` of `checkm`
+>
+> Compute completeness/contamination for your bins. Did you get any bonus information?
+>
+> Optional : [taxon_wf](https://github.com/Ecogenomics/CheckM/wiki/Workflows)
+>
+> Collect all your 'good' MAGs into the shared folder `/proj/g2019027/2019_MG_course/MAG_collection/`, make sure there is no other MAG there with that name.
 
-> Compute completeness/contamination for your MAG of choice. Did you get any bonus information?
+##### Functional annotation
 
-> Optional : compute this for more MAGs, and try the [taxon_wf](https://github.com/Ecogenomics/CheckM/wiki/Workflows)
+Now we should have a collection of MAGs that we can further analyze. The first step is to predict genes as right now we only have raw genomic sequences. We will use one of my all-time-favorites : `prokka`.
 
-> Collect all 'good' MAGs into a shared folder
-
-##### Bin annotation
-
-Now we should have a collection of MAGs that we can further analyze. The first step is to predict genes again, as right now we only have raw genomic sequences. We will use a different tool this time, one of my all-time-favorites : `prokka`.
-
-This tool does gene prediction as well as some quiet good annotations, and is actually quiet easy to run!
+This tool does gene prediction as well as some decent and usefull annotations, and is actually quiet easy to run!
 
 > Use `prokka` loaded with `module`
-
-> Predict genes and annotate your MAG!
-
+>
+> Predict genes and annotate your MAGs!
+>
 > Optional : use `prokka` on some of the bins that did not pass the previous quality checks!
 
 `prokka` produces a number of output files that all kind of represent similar things. Mostly variants of FASTA-files, one with the genome again, one with the predicted proteins, one with the genes of the predicted proteins. Also it renames all the sequence with nicer IDs! Additionally a very useful file generated is a GFF-file, which gives more information about the annotations then just the names you can see in the FASTA-files.
 
+The annotations of `prokka` are good but not very complete for environmental bacteria. Let's run an other tool I like a lot, eggNOGmapper. This is a bit heavier in computation and it is not on  `UPPMAX`, so you will have to [install](https://github.com/eggnogdb/eggnog-mapper/wiki/eggNOG-mapper-v2) it.
+
+> Install eggNOG-mapper
+>
+> run it on at least one MAG (don't be greedy, it is not fast!)
+>
+> OPTIONAL : undestand the output of it ...
 
 You will explore this tomorrow some more with Maliheh.
 
+##### Taxonomic annotation
+
 We now know more about the genes your MAG contains, however we do not really know who we have?! `checkm` might have given us an indication but it is only approximative.
 
-Taxonomical classification for full genomes is not always easy for MAGs, often the 16S gene is missing as it assembles badly, and which other genes to use to for taxonomy is not always evident. One option is to take many genes and to make a tree.
+Taxonomic classification for full genomes is not always easy for MAGs, often the 16S gene is missing as it assembles badly, and which other genes to use to for taxonomy is not always evident. Typically marker genes, min-hashes or k-mer databases are used as reference. It is often problematic for environmental data as the databases are not biased into our direction! We will use a min-hash database I compiled specifically for this (based on other tools and the full-datasets) using a tool called [sourmash](https://sourmash.readthedocs.io/en/latest/).
 
-One tool implementing such a thing is `phylophlan`, it has a reference tree based on a concatenation of reference genes, tries to find homologues of these genes in your bin, and then to fit  them into the reference tree.
+> Install sourmash!
+>
+> Use the lca function of sourmash with the database found here /proj/g2019027/2019_MG_course/dbs/our_taxonomical_database.json
 
-> Install `phylophlan`
+This database was made by MAGs annotated with an other [tool](https://github.com/Ecogenomics/GTDBTk), `gtdbtk`, it uses marker genes and loads of data. It is a bit heavy, and tricky to run/install but much more sensitive.
 
-> Use it to identify your MAG(s)
-
-##### A bit of phylogenomics
-
-If we have time!
+> Optional: install and run gtdbtk
