@@ -65,8 +65,8 @@ module load bioinfo-tools
 ```
 
 Modules are loaded on Rackham until you disconnect from your terminal, so one you loaded them you do not need to rerun these commands. But if you disconnect, they will not be loaded anymore, so you will need to reload on you next connect!
-
 ## Processing your reads
+
 
 ### QC-ing
 
@@ -146,12 +146,12 @@ However this does not say anything about the quality of the `contigs` directly, 
 
 We need to look at how the contigs "look-like". A first simple way of looking at this is to simply do some stats on contig lengths and coverage. There are many ways probably to do this, but we will use a script that has been written by yours truly. We will use this to learn a bit about scripting and stuff.
 
-You can find the script in [script-folder], this is a very simple python script, make a copy in your working directory.
+You can find the script in [here](../scripts/seq_stats.R), this is a pretty simple `R`-script, make a copy in your working directory.
 
-To run a python script, normally you'd just have to do:
+To run an `R`-script, you can just do:
 
  ```bash
- python my_script.py
+Rscript my_script.R
  ```
 
  Let's try to run the script you just obtained from a friendly collaborator.
