@@ -52,7 +52,6 @@ As we see, there is plenty of libraries, each of us should pick (at least) one:
 
 > Go to (https://etherpad.wikimedia.org/p/SLU_metagenomics_course_2019)[our virtualwhiteboardthing]
 > put your name next to a sample of your choice! This is gonna be your sample!
->
 > What data, and depth was your sample taken at?
 
 
@@ -72,15 +71,12 @@ Modules are loaded on Rackham until you disconnect from your terminal, so one yo
  As mentioned, the raw-data we will use is available in the `/proj/g2019027/raw_data`. This is unpublished data from a lake in Switzerland, multiple time points as well as depth points. We have already preprocessed and subset it some to guarantee some quality of asssembly, but let's check it out!
 
  > Use the linux command  `ls`, `wc`, and `du` :
- >
- > What is the content of this folder? How much data do we have?!
- >
- > Optional : Can you guess what the file names mean?!
+  > What is the content of this folder? How much data do we have?!
+  > Optional : Can you guess what the file names mean?!
 
 The first step is to quality check these libraries. From this mornings tutorial with Domenico, you should have learned some tools, it's time to use them!
 
 > Use the tools from the previous tutorial to QC your reads
->
 > What can you learn from the returned report?!
 > Can you say something about the number of reads?
 > Is your library good?
@@ -126,17 +122,13 @@ One of the first factors is the amount of reads that align to the assembly. The 
 To get this information we will need a mapping tool. We will use `BBmap`. Mappers, like `BBmap`, don't only return the proportion of mapping reads, but also the specific alignments, these are output as SAM-files, a particularly horrible and wasteful file type.
 
 > Using `bbmap.sh` loaded with `module`, use the `bamscript=`-option
->
 > Map your library to your assembly. What proportion of your reads map to your assembly? Any comments about the size of the SAM-file?
->
 > Optional : map subsets of the other samples to your assembly, how does it look like? (checkout the `reads` option, and also the  `showprogress` one , mostly because I like it)
 
 SAM-files are HUUUUUGE, we do not like that, BAM-files, the compressed version of SAM is a bit better.
 
 > Use the script written by the `bamscript=` option of `bbmap.sh`.
->
 > What are the generated files?
->
 > Keep the BAM-file and other file, we will need them later.
 
 However this does not say anything about the quality of the `contigs` directly, only about how much of the data has been assembled, but it could all just have assembled into very small contigs!
@@ -158,15 +150,12 @@ Rscript my_script.R
 Hmmm, you probably got errors. Many scripting languages have systems to load additional packages of functions. For R you have to use the `install.packages` function to get packages from CRAN, also there is something called `bioconductor`.
 
 > Open R
->
 > install the missing packages, try to run the script
 
 Probably you still got errors ... Well it's probably time to open the script and have a look.
 
 > Fix the script, the error messages obtained should give you an idea of the problem
->
 > Now it should run, you should get some basic info about your assembly, as well as a pretty plot
->
 > Optional : Personalize the script a bit. And run the script with all the assemblies.
 
 We have now some basic data about our few simple assemblies.
@@ -178,7 +167,6 @@ We have now some basic data about our few simple assemblies.
 So we are "lucky" our assemblies look kinda nice ... we can now make some other assemblies. We could normalize the reads to remove micro-diversity and errors. We could split the reads into different subsets (e.g. eukaryotic and prokarotic for example). Or coassemble multiple libraries together.
 
 > Discuss some strategies
->
 > OPTIONAL : make an other assembly.
 
 ### Binning the contigs
@@ -188,9 +176,7 @@ Nice, we have genomic-data with some patterns in it. Now we want to extract geno
 This tool will need the sorted BAM-files we made to run.
 
 > For you genomic-assembly of choice. Cfind the sorted indexed BAM-file you made assembly in a folder. (Remember the `bamscript=` option of `bbmap`), now is the time!
->
 > Using `runMetaBat.sh`, loaded with `module load MetaBaT`. Have a look at the FASTA-files generated.
->
 > Optional : run the binning on an other assembly, or with more mappings!
 
 ##### Evaluating bins
@@ -204,7 +190,6 @@ We need to evaluate the bins for that. A very simple first filter is to remove b
 Also, the `R`-script previously used colours by bin (yey!), so let's make our plot prettier:
 
 > Change the script so it finds your bins, and run it again, it should make the figure prettier!
->
 > optional : compute other stats on these bins, let your imagination run wild (or maybe use the script I provided earlier)
 
 Now we should all have a bin we hope is a genome! To check this we will use a tool called `checkm`, fundamentally it uses single copy marker genes to check if a bin/MAG is complete, and if it is contaminated.
@@ -214,11 +199,8 @@ Now we should all have a bin we hope is a genome! To check this we will use a to
 Once it seams like it is running we want to run the `lineage_wf`, the documentation of `checkm` is a bit more confusing than other tools... So I advice you to look at [this specific page](https://github.com/Ecogenomics/CheckM/wiki/Quick-Start) and don't get lost in the others!
 
 > Using the `lineage_wf` of `checkm`
->
 > Compute completeness/contamination for your bins. Did you get any bonus information?
->
 > Optional : [taxon_wf](https://github.com/Ecogenomics/CheckM/wiki/Workflows)
->
 > Collect all your 'good' MAGs into the shared folder `/proj/g2019027/2019_MG_course/MAG_collection/`, make sure there is no other MAG there with that name.
 
 ##### Functional annotation
@@ -228,9 +210,7 @@ Now we should have a collection of MAGs that we can further analyze. The first s
 This tool does gene prediction as well as some decent and usefull annotations, and is actually quiet easy to run!
 
 > Use `prokka` loaded with `module`
->
 > Predict genes and annotate your MAGs!
->
 > Optional : use `prokka` on some of the bins that did not pass the previous quality checks!
 
 `prokka` produces a number of output files that all kind of represent similar things. Mostly variants of FASTA-files, one with the genome again, one with the predicted proteins, one with the genes of the predicted proteins. Also it renames all the sequence with nicer IDs! Additionally a very useful file generated is a GFF-file, which gives more information about the annotations then just the names you can see in the FASTA-files.
@@ -238,9 +218,7 @@ This tool does gene prediction as well as some decent and usefull annotations, a
 The annotations of `prokka` are good but not very complete for environmental bacteria. Let's run an other tool I like a lot, eggNOGmapper. This is a bit heavier in computation and it is not on  `UPPMAX`, so you will have to [install](https://github.com/eggnogdb/eggnog-mapper/wiki/eggNOG-mapper-v2) it.
 
 > Install eggNOG-mapper
->
 > run it on at least one MAG (don't be greedy, it is not fast!)
->
 > OPTIONAL : undestand the output of it ...
 
 You will explore this tomorrow some more with Maliheh.
@@ -252,7 +230,6 @@ We now know more about the genes your MAG contains, however we do not really kno
 Taxonomic classification for full genomes is not always easy for MAGs, often the 16S gene is missing as it assembles badly, and which other genes to use to for taxonomy is not always evident. Typically marker genes, min-hashes or k-mer databases are used as reference. It is often problematic for environmental data as the databases are not biased into our direction! We will use a min-hash database I compiled specifically for this (based on other tools and the full-datasets) using a tool called [sourmash](https://sourmash.readthedocs.io/en/latest/).
 
 > Install sourmash!
->
 > Use the lca function of sourmash with the database found here /proj/g2019027/2019_MG_course/dbs/our_taxonomical_database.json
 
 This database was made by MAGs annotated with an other [tool](https://github.com/Ecogenomics/GTDBTk), `gtdbtk`, it uses marker genes and loads of data. It is a bit heavy, and tricky to run/install but much more sensitive.
