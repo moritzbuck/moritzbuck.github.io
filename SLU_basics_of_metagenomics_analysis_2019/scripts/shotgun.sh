@@ -112,12 +112,12 @@ do
   fi
 done
 
-for f in `ls *.fa`; 
+for f in `ls`; 
 do
-if [[ ! -f ${f%%.fa}/${f%%.fa}.emapper.annotations ]]
+if [[ ! -f ${f}/${f}.emapper.annotations ]]
   then
     echo emap  $f;
-    emapper.py --cpu 20 -i ${f%%.fa}/${f%%.fa}.faa -o ${f%%.fa}/${f%%.fa} -m diamond;
+    emapper.py --cpu 20 -i ${f}/${f}.faa -o ${f}/${f} -m diamond;
   fi
 done
 

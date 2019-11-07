@@ -6,14 +6,14 @@ title:  'Schedule'
 # (Rough) Schedule
 ---
 
-#### This course is given in SLU, campus Ultuna in Uppsala. Click the heading of a topic to see the lecture slides or lab instructions. We will have breaks too, no worries. 
+#### This course is given in SLU, campus Ultuna in Uppsala. Click the heading of a topic to see the lecture slides or lab instructions. We will have breaks too, no worries.
 
 ### Monday 11th  
 
 Room: Tentamensal 2, Undervisningshuset
 
 * 9-9.15      : Introduction (Sari Peura)
-* 9.15-10.30     : What is metagenomics? (Chris Greening)
+* 9.15-10.30  : What is metagenomics? (Chris Greening)
 * 10.30-12    : Howto of metagenomics analysis (Moritz Buck)
 * 12-13       : Lunch
 * 13-16       : Visit of SciLifeLab
@@ -22,9 +22,9 @@ Room: Tentamensal 2, Undervisningshuset
 
 Room: Lärosal P, Ulls hus      
 
-* 9-12  : Quality Control Lecture and tutorial (Domenico Simone, TAs: Moritz and Sari)
+* 9-12  : Quality control lecture and tutorial (Domenico Simone, TAs: Moritz and Sari)
 * 12-13 : Lunch
-* 13-16 : Assembly Lecture and tutorial (Moritz Buck, TAs: Domenico and Sari)
+* 13-16 : Assembly lecture and tutorial (Moritz Buck, TAs: Domenico and Sari)
 
 ### Wednesday 13th  
 
@@ -38,9 +38,9 @@ Room: Lärosal Y, Ulls hus
 
 Room: Hörsal V, Ulls hus \& C216, BioCenter
 
-*  9-12  : Metagenome and genome annotation Lecture and tutorial (Maliheh Mehrshad, TAs: Chris and Domenico)
+*  9-12  : Metagenome and genome annotation lecture and tutorial (Maliheh Mehrshad, TAs: Chris and Domenico)
 *  12-13 : lunch
-*  13-16 : Databases, phylogenies and gene annotation Lecture and tutorial (Chris Jones, TAs: Maliheh and Domenico)
+*  13-16 : Databases, phylogenies and phylogenetic mapping of reads lecture and tutorial (Chris Jones, TAs: Maliheh and Domenico)
 
 ### Friday 14th  
 
