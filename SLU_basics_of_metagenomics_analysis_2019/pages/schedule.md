@@ -14,7 +14,7 @@ Room: Tentamensal 2, Undervisningshuset
 
 * 9-9.15      : Introduction (Sari Peura)
 * 9.15-10.30  : What is metagenomics? (Chris Greening)
-* 10.30-12    : Howto of metagenomics analysis (Moritz Buck)
+* 10.30-12    : [How to of metagenomics analysis](../lectures/workflows.odp) (Moritz Buck)
 * 12-13       : Lunch
 * 13-16       : Visit of SciLifeLab
 
@@ -24,15 +24,15 @@ Room: Lärosal P, Ulls hus
 
 * 9-12  : Quality control lecture and tutorial (Domenico Simone, TAs: Moritz and Sari)
 * 12-13 : Lunch
-* 13-16 : Assembly lecture and tutorial (Moritz Buck, TAs: Domenico and Sari)
+* 13-16 : Assembly lecture and [tutorial](../pages/tutorial_assembly.md) (Moritz Buck, TAs: Domenico and Sari)
 
 ### Wednesday 13th  
 
 Room: Lärosal Y, Ulls hus
 
-*  9-12  : Binning Lecture and tutorial (Moritz Buck, TA: Domenico)
+*  9-12  : Binning Lecture and [tutorial](../pages/tutorial_binning.md) (Moritz Buck, TA: Domenico)
 *  12-13 : lunch
-*  13-16 : Tutorials continued (Moritz, TAs: Domenico  and Sari)
+*  13-16 : [tutorial](../pages/tutorial_binning.md) continued (Moritz, TAs: Domenico  and Sari)
 
 ### Thursday 14th  
 

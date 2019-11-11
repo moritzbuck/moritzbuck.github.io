@@ -2,7 +2,7 @@
 layout: default
 title:  'Metagenomics Workshop - November 2019'
 ---
- 
+
 
 # Introduction to Metagenomics
 ---
@@ -12,9 +12,13 @@ Held at SLU (Swedish University of Agricultural Sciences), Uppsala,  November 11
 ## Important Links
 
 [Pre-course material](pages/precourse.md)  
-<!--- [Course material](pages/tutorial.md) -->  
 [Schedule](pages/schedule.md)<br/>
 [VirtualWhiteboardThing](https://etherpad.wikimedia.org/p/SLU_metagenomics_course_2019)
+
+Tutorials :
+* Day 1 [Assembly](pages/tutorial_assembly.md)
+* Day 2 [Binning](pages/tutorial_binning.md)
+
 
 ## Helpful Things
 
