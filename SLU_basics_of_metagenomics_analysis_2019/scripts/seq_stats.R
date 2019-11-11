@@ -5,7 +5,7 @@ library(hues)
 # Setting up file names
 
 ## I SUSPECT YOUR ERRORS WILL BE IN THIS SECTION
-base = "/home/moritz/uppmax/people/0023_anoxicencyclo/course"
+base = "/home/moritz/people/0023_anoxicencyclo/course"
 sample_name = "Loc090907-8-6m"
 mapping_file = file.path(base, "bins", sample_name, "final.contigs.fa.depth.txt")
 assembly_name = file.path(base, "assemblies", sample_name, "final.contigs.fa")
@@ -46,8 +46,8 @@ if(!is.na(binning_file))
 
 # fix colours for the plot
 coverage_data$bin[is.na(coverage_data$bin)] = "unbinned"
-colmap = as.vector(iwanthue(length(levels(factor(coverage_data$bin)))-1))
-colmap = c(colmap ,"#999999")
+colmap = as.vector(iwanthue(length(levels(factor(coverage_data$bin)))))
+colmap[length(colmap)] = "#999999"
 
 # make a pretty plot
 p1 = ggplot(coverage_data[coverage_data$contigLen > 2500,], aes(x=gc_content, y=totalAvgDepth, size=contigLen, col=bin))+geom_point()+scale_y_log10()+scale_x_log10()+scale_color_manual(values = colmap)+theme_minimal()
