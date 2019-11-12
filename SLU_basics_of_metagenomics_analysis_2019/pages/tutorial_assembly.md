@@ -160,6 +160,10 @@ We have now some basic data about our few simple assemblies.
 
 > Any particular feelings about the obtained assemblies? Also, what about the plot?!
 
+One other way to check out an assembly is to inspect the k-mer graph. Bandage is a cool tool to do that!
+
+> Install Bandage and use [this](https://github.com/voutcn/megahit/wiki/Visualizing-MEGAHIT's-contig-graph) to inspect your assembly!
+
 #### Alternate assembly.
 
 So we are "lucky" our assemblies look kinda nice ... we can now make some other assemblies. We could normalize the reads to remove micro-diversity and errors. We could split the reads into different subsets (e.g. eukaryotic and prokarotic for example). Or coassemble multiple libraries together.

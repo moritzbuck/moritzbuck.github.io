@@ -24,7 +24,7 @@ Room: Lärosal P, Ulls hus
 
 * 9-12  : Quality control lecture and tutorial (Domenico Simone, TAs: Moritz and Sari)
 * 12-13 : Lunch
-* 13-16 : Assembly lecture and [tutorial](../pages/tutorial_assembly.md) (Moritz Buck, TAs: Domenico and Sari)
+* 13-16 : [Assembly lecture](../lectures/assembly.odp) and [tutorial](../pages/tutorial_assembly.md) (Moritz Buck, TAs: Domenico and Sari)
 
 ### Wednesday 13th  
 
