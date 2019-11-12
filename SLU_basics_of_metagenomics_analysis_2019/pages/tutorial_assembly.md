@@ -68,7 +68,7 @@ Modules are loaded on Rackham until you disconnect from your terminal, so one yo
 
 ### QC-ing
 
- As mentioned, the raw-data we will use is available in the `/proj/g20190272019_MG_course/raw_data`, make sure you name you sample here (https://etherpad.wikimedia.org/p/SLU_metagenomics_course_2019)[our virtualwhiteboardthing]. This is unpublished data from a lake in Switzerland, multiple time points as well as depth points. We have already preprocessed and subset it some to guarantee some quality of asssembly, but let's check it out!
+ As mentioned, the raw-data we will use is available in the `/proj/g20190272019_MG_course/raw_data`, make sure you name you sample here [https://etherpad.wikimedia.org/p/SLU_metagenomics_course_2019](our virtualwhiteboardthing). This is unpublished data from a lake in Switzerland, multiple time points as well as depth points. We have already preprocessed and subset it some to guarantee some quality of asssembly, but let's check it out!
 
  > Use the linux command  `ls`, `wc`, and `du` :
   > What is the content of this folder? How much data do we have?!
