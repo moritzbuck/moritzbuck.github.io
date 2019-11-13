@@ -5,9 +5,12 @@ library(hues)
 # Setting up file names
 
 ## I SUSPECT YOUR ERRORS WILL BE IN THIS SECTION
+# folder where your files are  
 base = "/home/moritz/people/0023_anoxicencyclo/course"
 sample_name = "Loc090907-8-6m"
+# You will need to run jgi_summarize_bam_contig_depthsfrom "module load MetaBat" with the --outputDepth option  on your sorted BAM  to get make that file 
 mapping_file = file.path(base, "bins", sample_name, "final.contigs.fa.depth.txt")
+# your assembly file
 assembly_name = file.path(base, "assemblies", sample_name, "final.contigs.fa")
 
 binning_file = NA #file.path(base, "bins", sample_name, "final.contigs.fa.depth.txt") # we will not use that in the first part of the tutorial ##FIX THIS WHEN WE DO BINNING
