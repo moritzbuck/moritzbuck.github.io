@@ -29,7 +29,7 @@ We will not spend much time on the login node. we just want to know which comput
 
 > Optional question: what does the `-X` in the command do.
 
-Rackham, as most UPPMAX computer systems, runs a queuing tool called SLURM (Simple Linux Utility for Resource Management, https://slurm.schedmd.com/). This tool is used to distribute computing resources to all users. A computer has been booked for each participant, SLURM knows 'its name'.
+Rackham, as most UPPMAX computer systems, runs a queuing tool called SLURM (Simple Linux Utility for Resource Management, (https://slurm.schedmd.com/). This tool is used to distribute computing resources to all users. A computer has been booked for each participant, SLURM knows 'its name'.
 
 On Rackham, to know which resources you have requested (or someone else requested for you) the `jobinfo` command is used.
 
@@ -43,14 +43,14 @@ ssh -X r123
 
 You are now on the computer that you can call `$HOME` for the next 3 days (actually only todfay, you will have to do that every day, we have a different booking for each day).
 
-The data we are gonna use for this course is in our common project folder, e.g. `/proj/g2019027/`), more specifically in  `/proj/g2019027/2019_MG_course/raw_data`.
+The data we are gonna use for this course is in our common project folder, e.g. `/proj/g2019027/`, more specifically in  `/proj/g2019027/2019_MG_course/raw_data`.
 
 > Using the `ls`-  or even better `tree`-function
 > How many fastq-files can you find in this folder, and list all of them?!
 
 As we see, there is plenty of libraries, each of us should pick (at least) one:
 
-> Go to (https://etherpad.wikimedia.org/p/SLU_metagenomics_course_2019)[our virtualwhiteboardthing]
+> Go to (https://etherpad.wikimedia.org/p/SLU_metagenomics_course_2019) [our virtualwhiteboardthing]
 > put your name next to a sample of your choice! This is gonna be your sample!
 > What data, and depth was your sample taken at?
 
@@ -68,7 +68,7 @@ Modules are loaded on Rackham until you disconnect from your terminal, so one yo
 
 ### QC-ing
 
- As mentioned, the raw-data we will use is available in the `/proj/g20190272019_MG_course/raw_data`, make sure you name you sample here [https://etherpad.wikimedia.org/p/SLU_metagenomics_course_2019](our virtualwhiteboardthing). This is unpublished data from a lake in Switzerland, multiple time points as well as depth points. We have already preprocessed and subset it some to guarantee some quality of asssembly, but let's check it out!
+ As mentioned, the raw-data we will use is available in the `/proj/g20190272019_MG_course/raw_data`, make sure you name you sample here [https://etherpad.wikimedia.org/p/SLU_metagenomics_course_2019] (our virtualwhiteboardthing). This is unpublished data from a lake in Switzerland, multiple time points as well as depth points. We have already preprocessed and subset it some to guarantee some quality of asssembly, but let's check it out!
 
  > Use the linux command  `ls`, `wc`, and `du` :
   > What is the content of this folder? How much data do we have?!
@@ -133,7 +133,7 @@ However this does not say anything about the quality of the `contigs` directly, 
 
 We need to look at how the contigs "look-like". A first simple way of looking at this is to simply do some stats on contig lengths and coverage. There are many ways probably to do this, but we will use a script that has been written by yours truly. We will use this to learn a bit about scripting and stuff.
 
-You can find the script in [here](../scripts/seq_stats.R), this is a pretty simple `R`-script, make a copy in your working directory.
+You can find the script in [here] (../scripts/seq_stats.R), this is a pretty simple `R`-script, make a copy in your working directory.
 
 To run an `R`-script, you can just do:
 
@@ -162,7 +162,7 @@ We have now some basic data about our few simple assemblies.
 
 One other way to check out an assembly is to inspect the k-mer graph. Bandage is a cool tool to do that!
 
-> Install Bandage and use [this](https://github.com/voutcn/megahit/wiki/Visualizing-MEGAHIT's-contig-graph) to inspect your assembly!
+> Install Bandage and use [this] (https://github.com/voutcn/megahit/wiki/Visualizing-MEGAHIT's-contig-graph) to inspect your assembly!
 
 #### Alternate assembly.
 
