@@ -22,6 +22,7 @@ I am mostly known around my department as the guy who knows how to use a compute
 [SLU intro to bioinfo 2020](SLU_intro2bioinfo_2020/index.md)
 [SLU metagenomics course 2019](SLU_basics_of_metagenomics_analysis_2019/index.md)
 [SciLifeLab 2017](https://scilifelab.github.io/courses/Metagenomics/1711/)
+[Host-microbe interaction 2024](HMI2024/)
 
 
 ## Stuff
