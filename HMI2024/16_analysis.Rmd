@@ -1,0 +1,655 @@
+---
+title: "16S rRNA amplicon analysis tutorial"
+output:
+  html_document: default
+  pdf_document: default
+date: "2024-11-26"
+---
+
+# Our dataset
+This test dataset consists of 18 samples coming from a plant microbiome study. The study sought to assess the microbial community composition of three different compartments:
+
+1) Bulk soil
+2) Rhizosphere
+3) Plant roots
+
+in two different plant species:
+
+1) Wheat
+2) Barley
+
+Three replicates were obtained for each compartment and species. DNA was extracted and amplified targeting the V3-V4 hypervariable regions of the 16S rRNA gene. The resulting amplicons were sequenced on an Illumina MiSeq instrument using a 2x250 paired-end strategy.
+
+# Workflow overview
+
+After we sequence our samples, we will normally receive data that has already been demultiplexed. This means that the reads from different samples will have already been separated into different files. So we will have one or two fastq files per sample (depending on whether we used a single-end or a paired-end sequencing strategy).
+
+From there, a standard amplicon analysis workflow can be roughly divided in three steps:
+
+1) Read pre-processing.
+2) Amplicon processing.
+3) Data exploration and statistical analysis.
+
+In this practical session, we will perform steps 2) and 3) using the _R_ software environment for statistical computing and graphics.
+
+### 1. Read pre-processing
+
+First, we will use software such as [fastqc](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/) to take a look at the general quality distribution of our files, and determine whether we still have adaptors and primers in them.
+
+If that's the case, we can use software such as [cutadapt](https://cutadapt.readthedocs.io/en/stable/) to remove primers, barcodes (if still present) and adapters from our reads.
+
+While a tutorial on _cutadapt_ is beyond the scope of this course, we have included the command that we used to pre-process each of our raw fastq files for your future reference. The comments on that piece of code also have a brief explanation of _cutadapt_'s syntax.
+
+```
+# We assume that our raw input files are in a directory called "raw"
+# We will also create two input directories
+#  - "cut" will contain the pre-processed files
+#  - "cut_sub" will contain 10% subsets of the pre-processed files.
+#    We will use those subsets in our example in order to speed up the analysis
+mkdir cut
+mkdir cut_sub
+# We will also create two extra output directories to be used later when quality filtering and trimming our reads
+mkdir filt
+mkdir filt_sub
+
+# Now we iterate over each forward file in the "raw" directory.
+#  We select all the files whose name contains the pattern *R1*
+
+for fwd in raw/*R1*.fastq.gz # So for each sample we will:
+do
+  # First we figure out the name of the reverse read file
+	rev=${fwd/R1/R2}
+	# Then we set the name of the output files
+	fwd_o=${fwd/raw/cut}
+	rev_o=${rev/raw/cut}
+	fwd_o=${fwd_o/.fastq.gz/.ca.fastq.gz}
+	rev_o=${rev_o/.fastq.gz/.ca.fastq.gz}
+	# Then we set up the names of the subsetted output files
+	fwd_osub=${fwd_o/cut/cut_sub}
+	rev_osub=${rev_o/cut/cut_sub}
+	
+	# Now we run cutadapt
+	cutadapt $fwd $rev -o $fwd_o -p $rev_o -a ACACTCTTTCCCTACACGACGCTCTTCCGATCTNNNNCCTACGGGNGGCWGCAG...AGATCGGAAGAG -A AGACGTGTGCTCTTCCGATCTGACTACNVGGGTATCTAATCC...AGATCGGAAGAG -j 24
+	### ON CUTADAPT SYNTAX
+	# -a is for the fwd reads, -A is for the rev reads
+	# The three dots (XXXX...YYY) indicate a linked adapter:
+	#  This means that our amplicons are surrounded by 5' (XXXX) and 3' (YYY) adapters and we want to remove both
+	# In our case -a ACACTCTTTCCCTACACGACGCTCTTCCGATCTNNNNCCTACGGGNGGCWGCAG...AGATCGGAAGAG
+	# This means that the forward reads have:
+	#  5' An Illumina adapter, 4 Ns, and the 341F primer (CCTACGGGNGGCWGCAG)
+	#  3' The universal illumina adapter (AGATCGGAAGAG)
+	# For the reverse reads -A AGACGTGTGCTCTTCCGATCTGACTACNVGGGTATCTAATCC...AGATCGGAAGAG
+	# This means that the reverse reads have:
+	#  5' An Illumina adapter and the 805R primer (GACTACNVGGGTATCTAATCC)
+	#  3' The universal illumina adapter (AGATCGGAAGAG)
+	
+	# Finally we create 10% subsets of the cutadapt results
+	seqtk sample $fwd_o 0.1 | gzip > $fwd_osub
+	seqtk sample $rev_o 0.1 | gzip > $rev_osub
+
+done
+```
+
+### 2. Amplicon processing
+
+After pre-processing, we still have one set of fastq files per sample, each containing thousands of reads. We will now process these sequences in order to:
+
+1) Remove low quality reads.
+2) Denoise the remaining reads in order to remove sequencing errors.
+3) Merge the forward and reverse reads. At this point, merged reads that are identical will be considered to belong to the same entity. This is what we call an Amplicon Sequence Variant (ASV). An ASV will be more abundant in a given sample the higher the number of reads it has.
+4) Taxonomically classify the resulting ASVs.
+
+With this step, we have gone from a lot of fastq files containing a lot of reads to a single table containing the abundance of our different ASVs in the different samples (and some extra info such as their sequences and taxonomic classification).
+
+### 3. Data exploration and statistical analysis
+
+An ASV table contains information on the microbial community composition in our different samples, but this is still too complex to be understood directly by looking at it. We will need to apply different visualization and statistical methods in order to summarize the trends present in our data and determine which of them are significant.
+
+In this course, we will perform some basic alpha and beta diversity analyses to identify the main drivers of microbial community composition in our samples, and a differential abundance test to identify taxa that are significantly enriched in certain plant compartments.
+
+# Installing libraries in R
+
+For this analysis, we will use several libraries (also known as packages) to extend the basic functionality of _R_. These will be:
+
+1) _dada2_: to perform amplicon processing.
+2) _phyloseq_: to work with the ASV data, the taxonomic data and the metadata (additional data associated to our samples) in a more convenient way.
+3) _vegan_: to perform alpha and beta diversity analysis.
+4) _DESeq2_: to perform differential abundance analysis.
+
+```{r}
+if (!require("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+
+for (pkg in c("remotes", "dada2", "phyloseq", "vegan", "DESeq2")) {
+  if (!requireNamespace(pkg, quietly = TRUE)) {
+    BiocManager::install(pkg)
+  }
+}
+```
+
+# Amplicon processing
+
+We will now use _dada2_ to process our fastq reads in order to create an ASV table. This can be divided into different steps. We will start by loading the _dada2_ library.
+
+```{r}
+library(dada2)
+```
+
+### Locating the input files
+
+First, we need to make _R_ aware of where our input files are. We will use the `list.files` function to create one vector with the paths to all of our forward read files, and another vector with the path to all of our reverse read files.
+
+The first argument accepted by `list.files` is the directory in which it will look for files. In our case it is `"cut_sub"`. This directory contains 10% subsets of the pre-processed reads, we will use this to speed up this example analysis. In a real case we would be analyzing all the reads, not only 10%.
+
+The `pattern` argument specifies the pattern to look for in the file names. In our case, all the forward read files will end with `"_R1_001.ca.fastq.gz"`, and all the reverse read files will end with `"_R1_001.ca.fastq.gz"`.
+
+We will also get the names of our samples from the name of our input files, since we will use them later when building our outputs. 
+
+```{r}
+fnFs = sort(list.files("cut_sub", pattern="_R1_001.ca.fastq.gz", full.names = TRUE))
+fnRs = sort(list.files("cut_sub", pattern="_R2_001.ca.fastq.gz", full.names = TRUE))
+
+# Uncomment this block to do tests with only two samples
+# This can be helpful when we want to test different parameter combinations quickly
+#fnFs = fnFs[1:2]
+#fnRs = fnRs[1:2]
+
+# Extract sample names, assuming filenames have format: SAMPLENAME_XXX.fastq
+sample.names = sapply(strsplit(basename(fnFs), "_"), `[`, 1)
+
+print("First 6 sample names are:")
+head(sample.names)
+print("First 6 forward files are:")
+head(fnFs)
+print("First 6 reverse files are:")
+head(fnRs)
+```
+We can use the `plotQualityProfile` function from _dada2_ to look at the distribution of quality scores in our read files. In this case we will look at the first two forward files.
+
+```{r}
+plotQualityProfile(fnFs[1:2])
+```
+Similarly, for the first two reverse files.
+```{r}
+plotQualityProfile(fnRs[1:2])
+```
+We can see how the reverse reads drop in quality faster as we reach the end of the reads. This is a normal behaviour and overall our read qualities are good.
+
+### Filtering and trimming our reads
+
+Sequencing errors can have a large impact in amplicon studies, as they can result in "fake" species being detected in our samples. Although later we will attempt to correct those errors, it is convenient to have an initial filtering step in which:
+
+1) We trim our reads, removing the 3' end (which is more prone to having errors).
+2) We analyze the quality scores of each read and remove those expected to contain errors.
+
+For this, we will use the `filterAndTrim` function from _dada2_.
+
+We will use standard filtering parameters:
+
+- `maxN=0`: (DADA2 requires no ambiguous nucleotides in the sequences).
+- `truncQ=2`: truncate the reads after the first occurrence of a base with a quality score of 2 or lower.
+- `rm.phix=TRUE`: discard reads that match against the phiX genome. This is a sequencing control in Illumina instrument, and, although it should not have reached our data, it is not bad to check for it anyways.
+- `compress=TRUE`: to output a compressed fastq file to save space.
+- `multithread=TRUE`: to use several processors if available (this has to be disabled if using windows).
+
+The outcome of this step will be dictated primarily by the following two parameters:
+
+- `maxEE = c(2,2)`: this controls the maximum number of expected errors allowed in the forward (first number) and reverse (second number) reads.
+- `truncLen=c(220,220)`: this will truncate the forward and reverse reads to 220 and 220 nucleotides, respectively. Truncating to smaller lengths will increase the quality of our reads (as errors tend to concentrate in the 3' end) but will also reduce the overlap between the forward and reverse reads (since the overlap also happens in the 3' end) to the point to which merging them may become impossible. The exact values to be used here will depend on the library design (how long are your reads vs how long you expect the amplicon to be).
+
+```{r}
+# Assign the filenames for the filtered fastq.gz files
+#  Place filtered files in the filt/ subdirectory
+filtFs = file.path(".", "filt_sub",
+                   paste0(sample.names, "_fwd_filt.fastq.gz"))
+filtRs = file.path(".", "filt_sub",
+                   paste0(sample.names, "_rev_filt.fastq.gz"))
+names(filtFs) = sample.names
+names(filtRs) = sample.names
+
+
+# Filter the reads
+out = filterAndTrim(fnFs, filtFs, fnRs, filtRs, maxN=0,
+                    truncLen=c(220,220), maxEE=c(2,2), truncQ=2,
+                    rm.phix=TRUE,compress=TRUE, multithread=TRUE)
+
+# See a summary of how many reads have passed the filtering step
+head(out)
+```
+We can see how filtering and trimming has removed around 30-40% of our original reads. This is a bit too high but still acceptable, considering that these samples were sequenced in an old instrument with higher error rates.
+
+### Learning the error rates
+
+The DADA2 algorithm makes use of a parametric error model (err) and every amplicon dataset has a different set of error rates. The `learnErrors` function learns this error model from the data, by alternating estimation of the error rates and inference of sample composition until they converge on a jointly consistent solution. As in many machine-learning problems, the algorithm must begin with an initial guess, for which the maximum possible error rates in this data are used (the error rates if only the most abundant sequence is correct and all the rest are errors).
+
+```{r}
+errF = learnErrors(filtFs, multithread=TRUE)
+errR = learnErrors(filtRs, multithread=TRUE)
+#It is always worthwhile, as a sanity check if nothing else, to visualize the estimated error rates:
+plotErrors(errF, nominalQ=TRUE)
+```
+
+This error plot shows the theoretical distribution of errors in red (as calculated from the quality scores) vs the real distribution in our dataset (grey points, and black line showing the model fit) for different base transitions (e.g. T to A, C to G, etc). It is normal if they do not match exactly, as the quality scores generated by sequencing instruments are only approximate. But at least the non-error probabilities (A to A, C to C, etc...) should be close to the theoretical distribution.
+
+### Sample Inference
+
+We are now ready to apply the core sample inference algorithm to the filtered and trimmed sequence data. The DADA2 algorithm will infer true sequence variants from the unique sequences in each sample.
+
+Simplifying a bit, the algorithm will compare pairs of sequences and calculate the likelihood that they actually came from the same organism and their differences are only due to sequencing errors. Several factors will influence this likelihood.
+
+1) The relative abundances of both sequences. It is easy to believe that sequencing errors can generate one erroneous sequence out of an initial population of 1000 correct sequences. But it is very unlikely that sequencing errors will generate 200 identical erroneous sequences out of an initial population of 1000 correct sequences.
+
+2) The inferred error rates. The higher the inferred errors were for a given transition for a given quality score (e.g. a A->T transition in a base with Q15) the more likely it will be that a difference in that position will be due to sequencing errors.
+
+Depending on the outcome of the algorithm, the least abundant sequence will treated as a sequencing error and corrected, or it will be treated as a real variant.
+
+
+```{r}
+dadaFs = dada(filtFs, err=errF, multithread=TRUE)
+dadaRs = dada(filtRs, err=errR, multithread=TRUE)
+```
+
+### Merging paired reads
+
+We now merge the forward and reverse reads together to obtain the full denoised sequences. Merging is performed by aligning the denoised forward reads with the reverse-complement of the corresponding denoised reverse reads, and then constructing the merged “contig” sequences.
+
+By default, merged sequences are only output if the forward and reverse reads overlap by at least 12 bases, and are identical to each other in the overlap region (but these conditions can be changed via function arguments). In our case, we have increased the `maxMismatch` parameter from zero to one, since otherwise many pairs got discarded during merging (there were remaining errors that precluded perfect pairings).
+
+```{r}
+mergers = mergePairs(dadaFs, filtFs, dadaRs, filtRs,
+                     maxMismatch=1, verbose=TRUE)
+```
+At this point most of the reads should be merging correctly. If this is not the case you probably need to readjust your trimming lengths.
+
+### Constructing the sequence table
+
+The `makeSequenceTable` function from _dada2_ will aggregate these results into an amplicon sequence variant (ASV) table, with samples in rows and ASVs in columns.
+
+```{r}
+seqtab = makeSequenceTable(mergers)
+print("Number of samples is:")
+print(nrow(seqtab))
+print("Number of ASVs is:")
+print(ncol(seqtab))
+```
+
+We can also check the length distribution of our ASVs, as most of them should be close to the expected length of our amplicon (464 bases in our case, although it will be smaller in practice since we removed the primers earlier).
+
+```{r}
+table(nchar(getSequences(seqtab)))
+```
+
+Sequences that are much longer or shorter than expected may be the result of non-specific priming. In our case we will remove sequences smaller than 400 bp.
+
+```{r}
+seqtab = seqtab[,nchar(colnames(seqtab)) %in% 400:430]
+```
+
+This is analogous to “cutting a band” in-silico to get amplicons of the targeted length.
+
+### Removing chimeras
+
+The core dada method corrects substitution and indel errors, but chimeras remain. Fortunately, the accuracy of sequence variants after denoising makes identifying chimeric ASVs simpler than when dealing with fuzzy OTUs. Chimeric sequences are identified if they can be exactly reconstructed by combining a left-segment and a right-segment from two more abundant “parent” sequences.
+
+```{r}
+seqtab.nochim = removeBimeraDenovo(seqtab, method="consensus",
+                                   multithread=TRUE, verbose=TRUE)
+print("Fraction of unique sequences that were non-chimeric:")
+ncol(seqtab.nochim)/ncol(seqtab)
+print("Fraction of total sequences that were non-chimeric:")
+sum(seqtab.nochim)/sum(seqtab)
+```
+The frequency of chimeric sequences varies substantially from dataset to dataset, and depends on on factors including experimental procedures and sample complexity. Here chimeras make up about 88% of the merged sequence variants, but when we account for the abundances of those variants we see they account for about 32% of the merged sequence reads.
+
+Considerations for your own data: Most of your reads should remain after chimera removal (it is not uncommon for a majority of sequence variants to be removed though). If most of your reads were removed as chimeric, upstream processing may need to be revisited. In almost all cases this is caused by primer sequences with ambiguous nucleotides that were not removed prior to beginning the DADA2 pipeline.
+
+
+### Tracking reads through the pipeline
+
+As a final check of our progress, we’ll look at the number of reads that made it through each step in the pipeline:
+
+```{r}
+getN = function(x) sum(getUniques(x))
+track = cbind(out, sapply(dadaFs, getN), sapply(dadaRs, getN), sapply(mergers, getN), rowSums(seqtab.nochim))
+# If processing a single sample, remove the sapply calls: e.g. replace sapply(dadaFs, getN) with getN(dadaFs)
+colnames(track) = c("input", "filtered", "denoisedF", "denoisedR", "merged", "nonchim")
+rownames(track) = sample.names
+head(track)
+```
+
+As discussed above we lost a lot during merging. Overlap length should have been enough, so maybe there were remaining errors that precluded perfect matches between the forward and the reverse reads.
+
+### Assigning taxonomy
+It is common at this point, especially in 16S/18S/ITS amplicon sequencing, to assign taxonomy to the sequence variants. The DADA2 package provides a native implementation of the naive Bayesian classifier method for this purpose. The `assignTaxonomy` function takes as input a set of sequences to be classified and a training set of reference sequences with known taxonomy, and outputs taxonomic assignments above a threshold of bootstrap confidence.
+
+```{r}
+taxa = assignTaxonomy(seqtab.nochim,
+                      "silva_nr99_v138.1_train_set.fa.gz",
+                      multithread=TRUE)
+```
+
+# Data exploration and statistical analysis
+
+Now we have processed our amplicon reads and obtained an ASV table tracking the abundances of each ASV in our samples. In this example we will perform some basic alpha diversity, beta diversity and differential abundance analysis.
+
+### Loading our metadata table
+
+Microbiome data is not useful on its own, unless we also have some extra information about the samples we are analyzing. This often comes in the form of a metadata table, with samples in rows and properties in columns. We will load ours using the `read.table` function from _R_. The first parameter will be the path to our metadata file (in our case a plain text file with fields separated by tabulators).
+
+Other parameters used here are:
+
+- `sep="\t"` to indicate that our table is tab-delimited.
+- `header=TRUE` to indicate that the first row contains column names.
+- `row.names=1` to indicate that the first column contains row names.
+
+
+```{r}
+# Load the metadata table
+md = read.table("Lab_metadata.tsv",
+                sep="\t", header=TRUE, row.names=1)
+
+# Make sure the samples are in the same order as in the ASV table
+md = md[rownames(seqtab.nochim),]
+md
+```
+In our case, for each sample we have the plant and compartment it comes from.
+
+### Creating a phyloseq object
+
+By this point we have generated a lot of data (ASV table, ASV sequences, ASV taxonomy, metadata), but it scattered across different objects. _phyloseq_ is an _R_ package that allows us to integrate all the information from a microbial ecology study into a single object, and to manipulate it, display it, and analyze it using different statistical methods.
+
+We will use the `phyloseq` function to create such an object from all the data we have generated previously.
+
+```{r}
+library(phyloseq)
+ps = phyloseq(otu_table(seqtab.nochim, taxa_are_rows=FALSE), 
+              tax_table(taxa),
+              sample_data(md))
+```
+
+This creates a `phyloseq` object that contains the ASV table, the taxonomy for each ASV and the metadata for each sample. We can use different utility functions to access the information in this object and manipulate it.
+
+For example, `taxa_names(ps)` will return the names of our ASVs.
+
+```{r}
+print("The name of our first ASV is:")
+taxa_names(ps)[1]
+```
+
+As of now, the ASVs are named with their nucleotide sequence, which is not practical. We will rename them to "ASV1", "ASV2", etc... and store the sequence information separately.
+
+```{r}
+dna = Biostrings::DNAStringSet(taxa_names(ps))
+names(dna) = taxa_names(ps)
+ps = merge_phyloseq(ps, dna)
+taxa_names(ps) = paste0("ASV", seq(ntaxa(ps)))
+
+# See a summary
+ps
+```
+Some basic examples of how to access the information stored in the phyloseq object:
+
+- `taxa_names(ps)` will return the ASV names.
+- `sample_names(ps)` will return the sample names.
+- `otu_table(ps)` will return the ASV table.
+- `tax_table(ps)` will return the taxonomy table.
+- `tax_table(ps)` will return the metadata table.
+- `refseq(ps)` will return the ASV sequences.
+
+The full documentation for _phyloseq_ can be found [here](https://www.rdocumentation.org/packages/phyloseq/).
+
+### Data exploration: taxonomy plots
+
+We will start by making a barplot with the distribution of the 20 most abundant ASVs. The `phyloseq` object we just created contains raw ASV counts, but for plotting it is more convenient to plot relative abundances instead. So we will start by creating a new `phyloseq` object with relative abundances.
+
+For this, we will use the `transform_sample_counts` from _phyloseq_. This function will take a `phyloseq` object and apply the selected transformation to each sample, returning a new `phyloseq` object with a transformed ASV table.
+
+```{r}
+ps.prop = transform_sample_counts(ps, function(otu) otu/sum(otu))
+```
+
+We will then select the 20 most abundant ASVs (based on their relative abundances across all samples) and create a new object with only them. For this, we will use the function `prune_taxa` from _phyloseq_. This function takes a `phyloseq` object and a vector of taxa names, and returns a new `phyloseq` object containing only those taxa.
+
+```{r}
+top = names(sort(taxa_sums(ps.prop), decreasing=TRUE))[1:20]
+ps.top = prune_taxa(top, ps.prop)
+```
+
+We are now ready to make our barplot. The `plot_bar` will take a `phyloseq` object and make a bar plot according to the requested options.
+
+The y axis will be the abundance of the ASVs in the ASV table (in our case it contains the relative abundances of the 20 most abundant ASV). We will also add the following options:
+
+- `x="Replicate"`: we want the x axis of our barplot to be the `Replicate` variable from our metadata.
+- `fill="Family"`: color each ASV according to the family it belongs to.
+- `facet_grid=Plant~Compartment`: we want to divide our samples into subplots, one for each Plant x Compartment combination.
+
+```{r}
+plot_bar(ps.top, x="Replicate", fill="Family",
+         facet_grid=Plant~Compartment)
+```
+
+We can see that the root samples are clearly different from the rest. They have a large fraction of Mitochondria, and also a large fraction of a single ASV that wasn't classified at the family level (showing as `NA` in our plot). We can check whether it was classified at a higher (phylum) level.
+
+```{r}
+plot_bar(ps.top, x="Replicate", fill="Order", 
+         facet_grid=Plant~Compartment)
+```
+
+### Removing mitochondria/chloroplasts
+
+They are Chloroplasts. The presence of Mitochondria and Chloroplasts in the root samples makes sense, since there are a lot of plant cells in there and Cyanobacteria/Chloroplasts also have a 16S rRNA gene that can be amplified with our primers. However, they are not part of the microbiome per se, so we will remove them.
+
+For this, we will use the `prune_taxa` function again, in this case to select all the ASVs that were NOT classified as mitochondria or chloroplasts. We will store the results in a new `phyloseq` object called `ps.good`.
+
+```{r}
+# First we create a logical vector with a TRUE/FALSE value for all ASVs
+# The value will be TRUE if the ASV is classified at the Order level
+#  (i.e. the Order column in the taxonomy is NOT NA for that ASV)
+
+isClassifiedOrder = !is.na(tax_table(ps)[,'Order' ])
+
+# in R the ! symbol indicates negation (logical not) 
+
+# Now we create another logical vector indicating whether the ASVs were classified at the Order level AND were Chloroplasts
+
+isChloro  = isClassifiedOrder & tax_table(ps)[,'Order'] =='Chloroplast'
+
+# in R the & symbol indicates conjunction (logical AND)
+
+# Now we use a similar approach to identify which ASVs were mitochondria
+isClassifiedFamily = !is.na(tax_table(ps)[,'Family' ])
+isMito  = isClassifiedFamily & tax_table(ps)[,'Family'] =='Mitochondria'
+
+# Now we select the ASVs that are either Chloroplasts or Mitochondria
+
+badASVs = isChloro | isMito
+
+# In R the | symbol indicates union (logical OR)
+
+goodASVs = !badASVs
+
+ps.good = prune_taxa(as(goodASVs, 'logical'), ps)
+```
+
+### Taxonomy plots (second try)
+
+We will repeat our taxonomy plots, same way as before, but now without Chloroplasts and Mitochondria.
+
+```{r}
+ps.good.prop = transform_sample_counts(ps.good,
+                                       function(otu) otu/sum(otu))
+
+top = names(sort(taxa_sums(ps.good.prop), decreasing=TRUE))[1:20]
+
+ps.good.top = prune_taxa(top, ps.good.prop)
+
+plot_bar(ps.good.top, x="Replicate", fill="Family",
+         facet_grid=Plant~Compartment)
+```
+
+### Rarefaction plots
+
+A key question we may ask ourselves is whether we have sequenced enough to capture all the diversity in our samples? This will depend on the nature of our samples: one read is enough to sequence all the diversity in a pure culture with only one species, while we need thousands (or millions!) of reads to capture all the species present in a soil sample.
+
+In practice, we can say that we have sequenced enough when we stop observing new ASVs even if we keep sequencing new reads We will assess this with the `rarecurve` function from _vegan_. This function take increasingly large subsamples of our data, and see how many ASVs are present in there, producing a curve in which the x axis is the number of reads subsampled, and the y axis is the number of ASVs observed. If our sequencing effort was large enough, this curve will approach a plateau, as we stop observing new ASVs even if we keep adding reads.
+
+```{r}
+library(vegan)
+set.seed(7) # since subsampling is random, we initialize the 
+            #  random seed in our computer to a fixed value so the 
+            #  result is fully reproducible
+rarecurve(as.data.frame(otu_table(ps.good)), step = 1000, label = T)
+```
+
+We may never truly reach a full plateau if our community is complex enough and our phylogenetic resolution is high enough (there are lots of rare taxa!). In this case even if we are not reaching a full plateau the slope becomes quite small (also bear in mind that we are only using 10% of the original dataset!). So this is good enough.
+
+### Alpha diversity plots
+
+Now that we are confident about our dataset we can start studying some diversity trends present in our samples. We will start by looking at alpha diversity.
+
+Alpha diversity refers to diversity on a local scale (i.e. within each sample). Roughly, it can bse said to describe how different are the individuals in the sample (how many taxa are there, and what are their relative abundances).
+
+A sample will be more diverse the more taxa are in it (richness), and the more similar their abundances are (evenness). In this case we will use the `plotRichness` function from _phyloseq_ to plot summarizing the Shannon diversity (a way of measuring alpha diversity) in our samples.
+
+
+
+```{r}
+# Alpha diversity should be estimated with rarefied data (though Shannon diversity is relatively robust to uneven sample sizes)
+set.seed(7)
+
+# We first calculate our rarefaction target
+# This will be the number of reads in the sample with the least reads
+min.counts.per.sample = min(rowSums(otu_table(ps.good)))
+
+# The we rarefy our ASV table
+x = rrarefy(as.data.frame(otu_table(ps.good)),
+            min.counts.per.sample)
+
+# Then we create a new phyloseq object and insert the rarefied ASV table
+ps.good.rar = ps.good
+otu_table(ps.good.rar) = otu_table(x, taxa_are_rows = F)
+
+# Finally
+plot_richness(ps.good.rar, x="Compartment", measures=c("Shannon"), color="Plant")
+```
+
+### Beta diversity analysis
+
+Where alpha diversity looks at the distribution of taxa within the same sample, beta diversity looks at the distribution of taxa between samples, namely what fraction of their diversity do they share.
+
+A popular way of studying beta diversity is through ordination diagrams, which represents samples as points distributed in a two-dimensional space. Samples with similar community compositions will be closer in this space, samples with more different community compositions will be more distant.
+
+In this case we will use the `ordinate` function from _phyloseq_ to perform the ordination. There are many methods for doing this, in this case we will use the Bray-Curtis dissimilarity metric to calculate inter-sample distances (`distance="bray"`) and we will use Non-Metrid Dimensional Scaling to perform the ordination (`method="NMDS"`).
+
+Finally, we will use the `plot_ordination` function from _phyloseq_ to plot the results. We can control the colours and shapes used to plot our samples in the ordination: in our case we will color the samples according to the compartment they were taken from (`color="Compartment"`) and use different shapes to show the plant species (`shape="Plant"`).
+
+
+```{r}
+# Default recommendation in DADA2: transform data to proportions as appropriate for Bray-Curtis distances
+set.seed(7) # NMDS has a random component so we should set a fixed random seed so that we get the exact same result when repeating the analysis
+ord.nmds.bray = ordinate(ps.good.prop, distance="bray", method="NMDS")
+plot_ordination(ps.good.prop, ord.nmds.bray,
+                color="Compartment", shape ="Plant")
+```
+
+When doing Non-Metric Dimensional Scaling (NMDS) it is important to look at the _stress_ of the ordination. This indicates how well the algorithm was able to represent the relationship between the samples in a two-dimensional space. In our case is around 0.05, which is a good results. A stress value over 0.2 would indicate that the dataset was too complex to be summarized in a two-dimensional space.
+
+
+### PERMANOVA
+
+In the NMDS we can see that our samples clearly cluster by compartment but in complex datasets the clustering may not be so evident, as they may be overlaps between clusters, or outliers. We can use methods such as PERMANOVA (Permutational Analysis of Variance) to assess which variables are significantly controlling the community composition in our samples.
+
+For this, we will use the `adonis2` function from the _vegan_ package. This function requires 3 elements.
+
+- A distance matrix representing the relationship between samples
+- A metadata table
+- A formula stating which metadata variables we want to test. In our test we want to check if our samples are significantly clustered by plant and the compartment.
+
+Additionally, we will add the `by="margin"` parameter. This way we will test the marginal effect of each term (its effect after accounting for all other terms in the model).  
+
+```{r}
+
+asv.table        = as(otu_table(ps.good.prop), "matrix")
+sample.distances = vegdist(asv.table, "bray")
+metadata.table   = as(sample_data(ps.good.prop), "data.frame")
+
+set.seed(7)
+adonis2(sample.distances~Plant+Compartment,
+        data = metadata.table, by="margin")
+```
+We can see how the compartment (Bulk soil, Rhizosphere, Roots) is a significant driver of microbial community contribution in our dataset, while the Plant (Wheat, Barley) is not.
+
+
+### Differential abundance analysis
+
+Our alpha and beta diversity analyses are looking at community-wide trends, but we may also be interested in looking at whether individual taxa are enriched or depleted in our experimental groups. In this lecture, we will use the `DESeq2` package for differential abundance analysis, since it is the one recommended by the _phyloseq_ authors, but there are more modern approaches, such as _ALDEx2_.
+
+First, we will load our `phyloseq` object into `DESeq2` by using the `phyloseq_to_deseq2` function from the _phyloseq_ package. Note that in this case we need to use the raw ASV abundances (not proportions or rarefied abundances), as _DESeq2_ will perform its own normalization internally. When loading the data, we also need to specify a formula indicating which metadata variables we want _DESeq2_ to consider: in this case we will build a model using the "Compartment" and "Plant" variables.
+
+```{r}
+library(DESeq2)
+# Use the non-normalized data for this, as DESeq2 will perform it's own normalization internally
+dds = phyloseq_to_deseq2(ps.good, ~ Compartment + Plant)
+```
+Then we can run the _DESeq2_ algorithm.
+
+```{r}
+dds = DESeq(dds)
+```
+
+This will return a `DESeqDataSet` with the output of the analysis. We can then use the `results` function from the _DESeq2_ package in order to perform different comparisons. This is controlled with the `contrast` argument.
+
+In this case `contrast = c("Compartment", "Bulk soil", "Rhizosphere")` means that we are going to compare the "Bulk soil" and "Rhizosphere" conditions from the "Compartment" variable. We will also use the `plotMA` function to plot a summary of the results.
+
+```{r}
+res = results(dds, alpha=0.05,
+              contrast = c("Compartment", "Bulk soil", "Rhizosphere"))
+
+plotMA(res)
+```
+
+This is an MA plot, in which 
+
+- Each point represents a different ASV.
+- Its position in the x axis represents its mean normalized abundance in the dataset.
+- Its position in the y axis shows whether it is enriched in the first condition ("Bulk soil", negative values) or the second condition ("Rhizosphere", positive values).
+- A point is colored in blue if the ASV is significantly enriched in one of the two conditions.
+
+We have stored the results of this particular contrast in the `res` variable. This is a dataframe in which each row is an ASV. The results of the test are in the different columns.
+
+So we can use the `padj` column to select the ASVs with significant differential abundance, and the `log2FoldChange` column to distinguish between those enriched in the soil and those enriched in the rhizosphere.
+
+```{r}
+up.soil  = res[!is.na(res$padj) & res$padj<0.05 & res$log2FoldChange>0,]
+up.rhizo = res[!is.na(res$padj) & res$padj<0.05 & res$log2FoldChange<0,]
+```
+
+Finally, we will visually confirm that the results make sense, by selecting one ASV significantly enriched in the rhizosphere, and making a boxplot showing its relative abundance in the soil samples vs the rhizosphere samples.
+
+First, we will select the most abundant ASV that was significantly enriched in the rhizosphere.
+
+```{r}
+ASV = rownames(up.rhizo)[order(up.rhizo$baseMean, decreasing=T)[1]]
+```
+
+Then we will get the sample names of the soil and rhizosphere samples.
+
+```{r}
+soilSamples  = rownames(md)[md$Compartment=="Bulk soil"]
+rhizoSamples = rownames(md)[md$Compartment=="Rhizosphere"]
+```
+
+With this, we will create two vectors with the relative abundance of that ASV in the soil samples and the rhizosphere samples, respectively.
+
+```{r}
+soil.abund  = c(otu_table(ps.good.prop)[soilSamples, ASV])
+rhizo.abund = c(otu_table(ps.good.prop)[rhizoSamples,ASV])
+```
+
+Finally, we make the boxplot. We can see that, indeed, the ASV is much more abundant in the rhizosphere samples. Even when we get significant results from a test, it is important to visually check some examples so ensure that the results make sense.
+
+```{r}
+boxplot(soil.abund, rhizo.abund,
+        ylab = "Relative abundance", main = ASV,
+        names = c("Bulk Soil", "Rhizosphere"))
+```
