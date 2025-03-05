@@ -52,13 +52,36 @@ wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 sh Miniconda3-latest-Linux-x86_64.sh
 ```
 
+agree to the license, we can use the default location for the install, but bw aware that the conda-folder can baloon in size when used heavily, and the amount of space in your home is limited.
+
 It will run for a little while and copy files and then ask something ("do you wish to update your shell profile").
 
 Now log out of dardel and in again.
 
 Your terminal should now have a `(base)`-prefix, if it does **update your progress on the etherpad**.
 
-agree to the license, we can use the default location for the install, but bw aware that the conda-folder can baloon in size when used heavily, and the amount of space in your home is limited.
+We need to set up a few things
+
+```bash
+# install mamba to make things faster
+conda install mamba
+
+# making sure we don't get sued for using stuff without the right license
+conda config --remove channels defaults
+rm ~/miniconda3/.condarc
+
+# install all the things
+mamba  env create -f /cfs/klemming/scratch/m/morbu/MultiOmics_2025/other_files/env.yaml
+
+# starting the env
+conda activate MetaOmics
+
+# testing if it works
+megahit -v
+
+```
+
+You should get `MEGAHIT v1.2.9` or something like that if you get there **check point on the etherpad again**.
 
 Then run
 
