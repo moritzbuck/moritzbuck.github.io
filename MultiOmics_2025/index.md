@@ -12,7 +12,7 @@ Held at SLU (Swedish University of Agricultural Sciences), Uppsala in March 2025
 ## Important Links
 
 [Canvas](https://slu-se.instructure.com/courses/15310)<br/>
-[VirtualWhiteboardThing](https://etherpad.wikimedia.org/p/multiomics_2025)
+[VirtualWhiteboardThing](https://etherpad.wikimedia.org/p/multiomics_2025)<br/>
 [Precourse tutorial](https://swcarpentry.github.io/shell-novice/)
 
 Tutorials :

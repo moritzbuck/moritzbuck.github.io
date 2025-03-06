@@ -1,4 +1,4 @@
-# Metagenomics Course, Fall 2019
+# MultiOmics Course, March 2025
 
 ## Learning goals of this tutorial:
 
@@ -83,7 +83,47 @@ megahit -v
 
 You should get `MEGAHIT v1.2.9` or something like that if you get there **check point on the etherpad again**.
 
-Then run
+Now lets connect to one of our reserved nodes:
+
+
+```bash
+
+# book a part of a node from the reservation
+salloc -t 30:00:00 -c 16 -A edu25.slu -p shared --res edu25-slu-2025-03-11
+
+# check the name of the node
+squeue -u <username> | grep shared
+
+# connect to the node and start the environment again
+ssh nid<node number>
+conda activate MetaOmics
+```
+
+So now we are ready to start
+
+
+```bash
+COURSE_ROOT=/cfs/klemming/scratch/m/morbu/MultiOmics_2025
+OWN_ROOT=$COURSE_ROOT/work_folder/$USER
+
+mkdir $OWN_ROOT
+cd $OWN_ROOT
+
+```
+
+Now you have a nice little folder in our course folder, just for you, and only you can write in it.
+
+We have prepared a dataset for this course, the libraries can be found at `$COURSE_ROOT/mock_libraries`
+
+
+```bash
+
+ls $COURSE_ROOT/mock_libraries 
+
+```
+
+This will show you all the `FASTQ`-files we have, they are paired, so there are two per sample. I have prepared a little google doc with a line per sample, you can find it [here](https://docs.google.com/spreadsheets/d/1J0VG6eFK8hgaSmQ96EjCKVV2Ya_OFDqENx_ZHu7O1Lo/edit?usp=sharing). 
+
 
 We will not spend much time on the login node. we just want to know which computer is booked for each of us.
 
