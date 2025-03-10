@@ -1,4 +1,4 @@
-# MultiOmics Course, March 2025
+# MultiOmics Course : Assembly tutorial
 
 ## Learning goals of this tutorial:
 
@@ -8,14 +8,7 @@ We have  number of goals for this course:
 * Understand and replicate the presented workflows in metagenomics
 * Familiarise yourself with manuals and online ressources
 
-
-## UPPMAX :
-
-All the exercices here will be done using dardel (https://www.pdc.kth.se/hpc-services/computing-systems/dardel-hpc-system/dardel-1.1043529).
-
-The rackham-cluster of uppmax is a distributed HPC cluster, meaning it is a lot of powerful computers networked together. It has 4 login-nodes and many more computing nodes.
-
-### SSH
+## SETUP
 
 We will use `ssh` (Secure SHell) to connect to this cluster, use you ssh-client of choice. To start, we have to log into the login node. Hopefully you set it all up with the keys.
 
@@ -105,7 +98,7 @@ So now we are ready to start
 ```bash
 COURSE_ROOT=/cfs/klemming/scratch/m/morbu/MultiOmics_2025
 OWN_ROOT=$COURSE_ROOT/work_folder/$USER
-
+DB_PATH=$COURSE_ROOT/dbs/
 mkdir $OWN_ROOT
 cd $OWN_ROOT
 
@@ -122,79 +115,100 @@ ls $COURSE_ROOT/mock_libraries
 
 ```
 
-This will show you all the `FASTQ`-files we have, they are paired, so there are two per sample. I have prepared a little google doc with a line per sample, you can find it [here](https://docs.google.com/spreadsheets/d/1J0VG6eFK8hgaSmQ96EjCKVV2Ya_OFDqENx_ZHu7O1Lo/edit?usp=sharing). 
+This will show you all the `FASTQ`-files we have, they are paired, so there are two per sample. I have prepared a little google doc with a line per sample, you can find it [here](https://docs.google.com/spreadsheets/d/1J0VG6eFK8hgaSmQ96EjCKVV2Ya_OFDqENx_ZHu7O1Lo/edit?usp=sharing), it has some metadata and the paths to the files again. 
 
-
-We will not spend much time on the login node. we just want to know which computer is booked for each of us.
-
-> Optional question: what does the `-X` in the command do.
-
-Rackham, as most UPPMAX computer systems, runs a queuing tool called SLURM (Simple Linux Utility for Resource Management, (https://slurm.schedmd.com/). This tool is used to distribute computing resources to all users. A computer has been booked for each participant, SLURM knows 'its name'.
-
-On Rackham, to know which resources you have requested (or someone else requested for you) the `jobinfo` command is used.
-
-> Use the jobinfo command to find the name of your dedicated computer
-
-Once you have the name of the computer (something looking like r123), you can log directly onto that computer. That name is the name of the computer in the local network of rackham, so you can simply connect with :
+I would like each of yous to pick one of the samples on the file and put in your name in the appropriate column of the file, and then you can make a copy of the file to your folder.
 
 ```bash
-ssh -X r123
+
+MY_SAMPLE=<sample_name>
+cp $COURSE_ROOT/mock_libraries/${MY_SAMPLE}_R1.fastq.gz .
+cp $COURSE_ROOT/mock_libraries/${MY_SAMPLE}_R2.fastq.gz .
+
 ```
+## Read based analysis
 
-You are now on the computer that you can call `$HOME` for the next 3 days (actually only todfay, you will have to do that every day, we have a different booking for each day).
+### Some QC
 
-The data we are gonna use for this course is in our common project folder, e.g. `/proj/g2019027/`, more specifically in  `/proj/g2019027/2019_MG_course/raw_data`.
-
-> Using the `ls`-  or even better `tree`-function
-> How many fastq-files can you find in this folder, and list all of them?!
-
-As we see, there is plenty of libraries, each of us should pick (at least) one:
-
-> Go to (https://etherpad.wikimedia.org/p/SLU_metagenomics_course_2019) [our virtualwhiteboardthing]
-> put your name next to a sample of your choice! This is gonna be your sample!
-> What data, and depth was your sample taken at?
-
-
-### The module system and other software prerequisites
-
-Rackham uses a module system for programs (http://www.uppmax.uu.se/resources/software/installed-software/). So many bioinformatic programs are available without installing anything. We will use this as much as possible during this course. You can list all available module with `module list`. Let's load the `bioinfo-tools`-module, which is a prerequisite for most of the tools we will use in the next couple of days:
+Before we do any analysis we  will quality check and filter the reads some, so we gona use `fastQC for an overview of read quality and fastp` to remove bad reads chop off adapters and some more clean up.
 
 ```bash
-module load bioinfo-tools
+fastqc ${MY_SAMPLE}_R1.fastq.gz ${MY_SAMPLE}_R2.fastq.gz
+fastp -w 16 --in1 ${MY_SAMPLE}_R1.fastq.gz --in2 ${MY_SAMPLE}_R2.fastq.gz --out1 ${MY_SAMPLE}_clean_R1.fastq.gz --out2 ${MY_SAMPLE}_clean_R2.fastq.gz --json ${MY_SAMPLE}_fastp.json --html ${MY_SAMPLE}_fastp.html
+fastqc ${MY_SAMPLE}_clean_R1.fastq.gz ${MY_SAMPLE}_clean_R2.fastq.gz
 ```
 
-Modules are loaded on Rackham until you disconnect from your terminal, so one you loaded them you do not need to rerun these commands. But if you disconnect, they will not be loaded anymore, so you will need to reload on you next connect!
-## Processing your reads
+Get the output files and have a look at them and discuss in your group. [insert the scp part here] **When you bored of them check-in on the etherpad**
 
-### QC-ing
 
- As mentioned, the raw-data we will use is available in the `/proj/g20190272019_MG_course/raw_data`, make sure you name you sample here [https://etherpad.wikimedia.org/p/SLU_metagenomics_course_2019] (our virtualwhiteboardthing). This is unpublished data from a lake in Switzerland, multiple time points as well as depth points. We have already preprocessed and subset it some to guarantee some quality of asssembly, but let's check it out!
+### First Taxonomical profiling
 
- > Use the linux command  `ls`, `wc`, and `du` :
-  > What is the content of this folder? How much data do we have?!
-  > Optional : Can you guess what the file names mean?!
+First we can have a little look at what is in the samples directly, we will used kraken2 for this:
 
-The first step is to quality check these libraries. From this mornings tutorial with Domenico, you should have learned some tools, it's time to use them!
+```bash
 
-> Use the tools from the previous tutorial to QC your reads
-> What can you learn from the returned report?!
-> Can you say something about the number of reads?
-> Is your library good?
-> Very optional : Anything to say about the diversity of the reads in the libraries?
+# if it's the first time you you run kraken, you will want to run this
+sh /cfs/klemming/home/m/morbu/miniconda3/envs/MetaOmics/opt/krona/updateTaxonomy.sh
 
-### Read trimming
+# classify reads
+k2 classify --db $DB_PATH/k2_db/  --output ${MY_SAMPLE}.kraken --use-names --threads 16 --report ${MY_SAMPLE}.kreport  ${MY_SAMPLE}_R1.fastq.gz ${MY_SAMPLE}_R2.fastq.gz
 
-Once we have some idea of how problematic the libraries are, and potential issues, we can use some tools to clean the libraries a bit reduce noise and increase quality
+# make a pretty figure
+ktImportTaxonomy -t 5 -m 3 -o ${MY_SAMPLE}.html ${MY_SAMPLE}.kreport
 
-A very commonly used tool for this is `trimmomatic`, it can do a large variety of operations on reads.
+# do some transformation to make a useful file
+bracken -d $DB_PATH/k2_db -i ${MY_SAMPLE}.kreport -o ${MY_SAMPLE}.bracken -r 150  -l G t 20
 
-> Load `trimmomatic` with UPMMAX's `module`-system
+```
 
-> Clean the reads!
+3 files are worth looking at here. The `.kraken` has a read-wise annotation, were each line is a read with it's classification, which can be useful get get reads matching specific taxa of interest. You can look at it like this:
 
-> Optional : re-run `FastQC` on the cleaned libraries and discuss
+```bash
+less -S ${MY_SAMPLE}.kraken
+
+# similarly for the braken-file
+
+less -S ${MY_SAMPLE}.bracken
+```
+
+(leave less by pressing `q`). Braken takes the kraken-report and summarises it at a specific taxonomic level, which is useful to make abundance tables, we summed the data to Genus-level. Put the path to this file into the google-doc, so we can later maybe make one of these.
+The last  one is an `html`-file that we can look at with the browser on you computer, for thaat we will have to download it. My way of choice is using scp, your milage might vary.
+
+```bash
+
+#from you own computer
+
+scp <dardel-username>@dardel.pdc.kth.se:/cfs/klemming/scratch/m/morbu/MultiOmics_2025/work_folder/<dardel-username>/<your-sample>.html <wherever-you-want-to-put-your-file>
+
+```
+
+Make sure the values between `<>` are replaced by the appropriate values (copy and paste is your best friend, just saying...). You can then open the file on your computer. From the outputs find the percentage of classified reads and
+add it to the google-sheet. ** Once your wrote the stuff into the google-sheet, check in on the etherpad **
+
+### Comparing samples
+
+We can compare these taxonomic profiles to each other [optional task for someone who has too much time/energy, get the braken results from all the students and turn it into an abundance table, maybe even make some plots]. An other option is to use * min-hashes *, it's a fancy-ish computer science thing developed to compare texts and used very effitiently do detect plagiarism. Turns out, it works very well to compare genomic data too, and get similarity scores.
+
+Compute the min-hash of your sample.
+
+```bash
+sourmash sketch dna -p k=31,scaled=1000,abund --merge $MY_SAMPLE ${MY_SAMPLE}_R1.fastq.gz ${MY_SAMPLE}_R2.fastq.gz -o ${MY_SAMPLE}.sig
+```
+
+Then ask your neighbour where their signature file is, and use sourmash to compare the two:
+
+```bash
+
+sourmash compare <your_signature_file> <your_friends_file>
+
+```
+
+Put the path to your signature file into the google-doc, so if there an overzealous student, they can do a similarity matrix. Anyhow **check into the etherpad** if you here
+
 
 ## Genome-resolved Metagenomics
+
+Let's move on.
 
 ### Assembly
 
@@ -206,9 +220,52 @@ For the purpose of this tutorial we will only use the `megahit`-assembler. This 
 
 We will start with simple assemblies of our libraries, meaning that we consider our libraries all independent and assemble them as such.
 
-> Using the `megahit`-assembler
-> Assemble your the reads of your sample!
-> Optional : How would you run a different assembly?
+```bash
+megahit -1 ${MY_SAMPLE}_clean_R1.fastq.gz -2 ${MY_SAMPLE}_clean_R2.fastq.gz -t 20 -o ${MY_SAMPLE}_assembly
+```
+
+Now this is done, you should have an assembly `FASTA`-file in the `${MY_SAMPLE}_assembly`-folder, called `final.contigs.fa`.
+
+We should get some data on it. otherwise it's just a bunch of `ATGC`, well at least before we do some annotation but that is tomorrow.
+
+So let's some stats on the assembly with `quast`:
+
+```bash
+
+quast -o ${MY_SAMPLE}_quast ${MY_SAMPLE}_assembly/final.contigs.fa -t 20
+
+```
+
+There are some fancy `html`-output, but for us now the `report.tsv` should be enough to get an idea and put some data into the sheet.
+
+Now we got an assembly, we want to cluster the contigs in there into Metagenome Assembled Genomes (MAGs), we'll use metabat, because. But first we need to map our sample back to the assembly, and then use a script to jumble it around.
+
+```bash
+
+bowtie2-build ${MY_SAMPLE}_assembly/final.contigs.fa ${MY_SAMPLE}_idx
+bowtie2 -x ${MY_SAMPLE}_idx -1 ${MY_SAMPLE}_clean_R1.fastq.gz -2 ${MY_SAMPLE}_clean_R2.fastq.gz -S ${MY_SAMPLE}_bowtie2.sam --threads 20
+samtools view  -b -S -@20  ${MY_SAMPLE}_bowtie2.sam | samtools sort -@ 24 -o ${MY_SAMPLE}_bowtie2.bam -
+
+jgi_summarize_bam_contig_depths --outputDepth ${MY_SAMPLE}_depth.tsv  ${MY_SAMPLE}_bowtie2.bam 
+metabat2 --inFile ${MY_SAMPLE}_assembly/final.contigs.fa --outFile ${MY_SAMPLE}_bowtie_bins/${MY_SAMPLE}_bin -a ${MY_SAMPLE}_depth.tsv  -t 20
+
+```
+
+Hopefully you got at leaast a bin out (I cheated, made sure all have a bin at least)
+
+Now we'd still like to know what those bins are and how good they are.
+
+```bash
+
+export GTDBTK_DATA_PATH=$DB_PATH/gtdbtk/release220
+gtdbtk classify_wf  --genome_dir ${samp}_bowtie_bins -x .fa --out_dir ${samp}_classification --cpus 20 --skip_ani_screen
+checkm lineage_wf -x .fa  ${samp}_bowtie_bins/  ${samp}_checkm/ > ${samp}_checkm.txtb
+
+
+```
+
+
+
 
 
 #### QC the assembly
