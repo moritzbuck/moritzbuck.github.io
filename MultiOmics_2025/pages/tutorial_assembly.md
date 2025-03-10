@@ -297,6 +297,7 @@ Hopefully you got at least a bin out (I cheated, made sure all have a bin at lea
 
 Now we'd still like to know what those bins are and how good they are.
 
+
 ```bash
 
 export GTDBTK_DATA_PATH=$DB_PATH/gtdbtk/release220
@@ -308,6 +309,27 @@ checkm2 predict --threads 32 -x .fa --input ${MY_SAMPLE}_bins/  --output-directo
 ```
 
 Now about getting data out of here, go to the google docs and fill in the information of your MAGs to the appropriate sheet.
+
+
+[insert the closing lecture]
+
+
+## Some points to chew on
+
+* compare most abundant kraken taxonomy annotation to the bins we got
+* any pattern to the Human "contamination" in the kraken results, any possible explanation?
+* what about the number of bins per samples? any patterns to that?!
+
+## For the zealous
+
+Some extra exercices if you got that far, no particular order, do what sounds fun to you:
+
+* use the google-doc to get the path to all braken results and make an abundance table, make some barstacks or nMDSes with them
+* make a  similarity matrix out of all signatures you can get, make an nMDS or a PCoA with it
+* get more bins by using mapping multiple samples for the binnings (do this with a sample that has a 'large-ish' assembly), use the sourmash similarity matrix to pick the samples.
+* make some cool coassembly to get even more bins
+* there is a lot of *Homo*.... or is it?
+
 
 
 
