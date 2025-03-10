@@ -226,7 +226,7 @@ From the outputs find the percentage of classified reads, and the name of the mo
 
 ### Comparing samples
 
-We could compare these taxonomic profiles to each other. An other option is to use *min-hashes* , it's a fancy-ish computer science thing developed to compare texts and used very effitiently do detect plagiarism. Turns out, it works very well to compare genomic data too, and get similarity scores.
+We could compare these taxonomic profiles to each other. An other option is to use *min-hashes*, it's a fancy-ish computer science thing developed to compare texts and used very effitiently do detect plagiarism. Turns out, it works very well to compare genomic data too, and get similarity scores.
 
 Compute the min-hash of your sample.
 
@@ -237,17 +237,16 @@ sourmash sketch dna -p k=31,scaled=1000,abund --merge $MY_SAMPLE ${MY_SAMPLE}_R1
 Then ask your neighbour where their signature file is, and use sourmash to compare the two:
 
 ```bash
-
 sourmash compare <your_signature_file> <your_friends_file>
-
 ```
 
-Put the path to your signature file into the google-doc, so if there an overzealous student, they can do a similarity matrix. Anyhow **check into the etherpad** if you here
+Put the path to your signature file into the google-doc, so if there an overzealous student, they can do a similarity matrix. Anyhow **check into the etherpad** if you here.
 
+[Little interlude on the nerdy bits of minHash]
 
 ## Genome-resolved Metagenomics
 
-Let's move on.
+Let's move on. Reads can only bring us so far. We will now 
 
 ### Assembly
 
@@ -275,7 +274,11 @@ quast -o ${MY_SAMPLE}_quast ${MY_SAMPLE}_assembly/final.contigs.fa -t $THREADS
 
 ```
 
-There are some fancy `html`-output, but for us now the `report.tsv` should be enough to get an idea and put some data into the sheet.
+There are some fancy `html`-output, but for us now the `report.tsv` should be enough to get an idea and put some data into the sheet. 
+
+**Check in on the etherpad to say you did it**
+
+[little theoretical interlude on assembly and binning]
 
 Now we got an assembly, we want to cluster the contigs in there into Metagenome Assembled Genomes (MAGs), we'll use metabat, because. But first we need to map our sample back to the assembly, and then use a script to jumble it around.
 
