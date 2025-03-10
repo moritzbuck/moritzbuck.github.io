@@ -27,7 +27,23 @@ ssh  <username>@dardel.pdc.kth.se
 
 kinit will ask for your password, enter it. When you type your password nothing will be shown on the screen. This a security feature, not a bug.
 
-**Let the etherpad know that you got here. **
+Now lets connect to one of our reserved nodes:
+
+```bash
+
+# book a part of a node from the reservation
+salloc -t 30:00:00 -c 32 -A edu25.slu -p shared --res edu25-slu-2025-03-11
+
+# check the name of the node
+squeue -u <username> | grep shared
+
+# connect to the node and start the environment again
+ssh nid<node number>
+```
+
+**if your prompt looks something like `<username>@nid0012345` let the etherpad know that you got on a node **
+
+
 
 Let's navigate to everyones working folder, we do not have enough space in our homes to do the work so we will work on the so-called `scratch`-partition, a shared 'hard-drive' that everyone can use, but is occasionally emptied, so be sure to copy anything you wanna keep back to a safer place:
 
@@ -40,28 +56,29 @@ pwd
 
 We could use the module system to run all the programs, but we are gonna be a bit lazy and use something called conda. Let's download it and run the installer with :
 
+** careful, when it ask for install location use your scratch-folder, something like this /cfs/klemming/scratch/m/<youruser>/miniconda3  and when it asks about updating your shell profile make sure to say NO**, otherwise agree to the licenses and whatever.
+
 ```bash
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 sh Miniconda3-latest-Linux-x86_64.sh
 ```
 
-agree to the license, we can use the default location for the install, but bw aware that the conda-folder can baloon in size when used heavily, and the amount of space in your home is limited.
-
 It will run for a little while and copy files and then ask something ("do you wish to update your shell profile").
 
-Now log out of dardel and in again.
+now let's start conda with `source $SNIC_TMP/miniconda3/bin/activate `
 
 Your terminal should now have a `(base)`-prefix, if it does **update your progress on the etherpad**.
 
 We need to set up a few things
 
 ```bash
+
+# making sure we don't get sued for using stuff without the right license
+rm $CONDA_PREFIX/.condarc
+
 # install mamba to make things faster
 conda install mamba
 
-# making sure we don't get sued for using stuff without the right license
-conda config --remove channels defaults
-rm ~/miniconda3/.condarc
 
 # install all the things
 mamba  env create -f /cfs/klemming/scratch/m/morbu/MultiOmics_2025/other_files/env.yaml
@@ -76,31 +93,26 @@ megahit -v
 
 You should get `MEGAHIT v1.2.9` or something like that if you get there **check point on the etherpad again**.
 
-Now lets connect to one of our reserved nodes:
-
-
-```bash
-
-# book a part of a node from the reservation
-salloc -t 30:00:00 -c 16 -A edu25.slu -p shared --res edu25-slu-2025-03-11
-
-# check the name of the node
-squeue -u <username> | grep shared
-
-# connect to the node and start the environment again
-ssh nid<node number>
-conda activate MetaOmics
-```
-
 So now we are ready to start
 
 
 ```bash
+
+#let's define some environment variables so we don't have to rewrite things, and also we don't get too lost.
+
 COURSE_ROOT=/cfs/klemming/scratch/m/morbu/MultiOmics_2025
 OWN_ROOT=$COURSE_ROOT/work_folder/$USER
 DB_PATH=$COURSE_ROOT/dbs/
+
+# number of cpus you can use 
+
+THREADS=32 
+# and now create a folder for you to work in
+
 mkdir $OWN_ROOT
 cd $OWN_ROOT
+
+
 
 ```
 
@@ -126,6 +138,7 @@ cp $COURSE_ROOT/mock_libraries/${MY_SAMPLE}_R1.fastq.gz .
 cp $COURSE_ROOT/mock_libraries/${MY_SAMPLE}_R2.fastq.gz .
 
 ```
+
 ## Read based analysis
 
 ### Some QC
@@ -134,23 +147,28 @@ Before we do any analysis we  will quality check and filter the reads some, so w
 
 ```bash
 fastqc ${MY_SAMPLE}_R1.fastq.gz ${MY_SAMPLE}_R2.fastq.gz
-fastp -w 16 --in1 ${MY_SAMPLE}_R1.fastq.gz --in2 ${MY_SAMPLE}_R2.fastq.gz --out1 ${MY_SAMPLE}_clean_R1.fastq.gz --out2 ${MY_SAMPLE}_clean_R2.fastq.gz --json ${MY_SAMPLE}_fastp.json --html ${MY_SAMPLE}_fastp.html
+fastp -w $THREADS --in1 ${MY_SAMPLE}_R1.fastq.gz --in2 ${MY_SAMPLE}_R2.fastq.gz --out1 ${MY_SAMPLE}_clean_R1.fastq.gz --out2 ${MY_SAMPLE}_clean_R2.fastq.gz --json ${MY_SAMPLE}_fastp.json --html ${MY_SAMPLE}_fastp.html
 fastqc ${MY_SAMPLE}_clean_R1.fastq.gz ${MY_SAMPLE}_clean_R2.fastq.gz
 ```
 
 Get the output files and have a look at them and discuss in your group. 
-, for thaat we will have to download it. My way of choice is using scp, your milage might vary.
+
+[short interlude on less]
+
+There are also some `html`-files, to look at these we will have to download it. My way of choice is using scp, your milage might vary.
 
 ```bash
 
 #from you own computer
 
-scp <dardel-username>@dardel.pdc.kth.se:/cfs/klemming/scratch/m/morbu/MultiOmics_2025/work_folder/<dardel-username>/<your-sample>.html <wherever-you-want-to-put-your-file>
+scp <dardel-username>@dardel.pdc.kth.se:/cfs/klemming/scratch/m/morbu/MultiOmics_2025/work_folder/<dardel-username>/*.html <wherever-you-want-to-put-your-file>
 
 ```
 
-Make sure the values between `<>` are replaced by the appropriate values (copy and paste is your best friend, just saying...). You can then open the file on your computer.
+Make sure the values between `<>` are replaced by the appropriate values (copy and paste is your best friend, just saying... You can then open the file on your computer.
 **When you bored of them check-in on the etherpad**
+
+
 
 
 ### First Taxonomical profiling
@@ -160,10 +178,10 @@ First we can have a little look at what is in the samples directly, we will used
 ```bash
 
 # if it's the first time you you run kraken, you will want to run this
-sh /cfs/klemming/home/m/morbu/miniconda3/envs/MetaOmics/opt/krona/updateTaxonomy.sh
+sh $CONDA_PREFIX/opt/krona/updateTaxonomy.sh
 
 # classify reads
-k2 classify --db $DB_PATH/k2_db/  --output ${MY_SAMPLE}.kraken --use-names --threads 16 --report ${MY_SAMPLE}.kreport  ${MY_SAMPLE}_R1.fastq.gz ${MY_SAMPLE}_R2.fastq.gz
+k2 classify --db $DB_PATH/k2_db/  --output ${MY_SAMPLE}.kraken --use-names --threads $THREADS --report ${MY_SAMPLE}.kreport  ${MY_SAMPLE}_R1.fastq.gz ${MY_SAMPLE}_R2.fastq.gz
 
 # make a pretty figure
 ktImportTaxonomy -t 5 -m 3 -o ${MY_SAMPLE}.html ${MY_SAMPLE}.kreport
@@ -224,7 +242,7 @@ For the purpose of this tutorial we will only use the `megahit`-assembler. This 
 We will start with simple assemblies of our libraries, meaning that we consider our libraries all independent and assemble them as such.
 
 ```bash
-megahit -1 ${MY_SAMPLE}_clean_R1.fastq.gz -2 ${MY_SAMPLE}_clean_R2.fastq.gz -t 20 -o ${MY_SAMPLE}_assembly
+megahit -1 ${MY_SAMPLE}_clean_R1.fastq.gz -2 ${MY_SAMPLE}_clean_R2.fastq.gz -t $THREADS -o ${MY_SAMPLE}_assembly
 ```
 
 Now this is done, you should have an assembly `FASTA`-file in the `${MY_SAMPLE}_assembly`-folder, called `final.contigs.fa`.
@@ -235,7 +253,7 @@ So let's some stats on the assembly with `quast`:
 
 ```bash
 
-quast -o ${MY_SAMPLE}_quast ${MY_SAMPLE}_assembly/final.contigs.fa -t 20
+quast -o ${MY_SAMPLE}_quast ${MY_SAMPLE}_assembly/final.contigs.fa -t $THREADS
 
 ```
 
@@ -246,11 +264,11 @@ Now we got an assembly, we want to cluster the contigs in there into Metagenome 
 ```bash
 
 bowtie2-build ${MY_SAMPLE}_assembly/final.contigs.fa ${MY_SAMPLE}_idx
-bowtie2 -x ${MY_SAMPLE}_idx -1 ${MY_SAMPLE}_clean_R1.fastq.gz -2 ${MY_SAMPLE}_clean_R2.fastq.gz -S ${MY_SAMPLE}_bowtie2.sam --threads 20
-samtools view  -b -S -@20  ${MY_SAMPLE}_bowtie2.sam | samtools sort -@ 24 -o ${MY_SAMPLE}_bowtie2.bam -
+bowtie2 -x ${MY_SAMPLE}_idx -1 ${MY_SAMPLE}_clean_R1.fastq.gz -2 ${MY_SAMPLE}_clean_R2.fastq.gz -S ${MY_SAMPLE}_bowtie2.sam --threads $THREADS
+samtools view  -b -S -@$THREADS  ${MY_SAMPLE}_bowtie2.sam | samtools sort -@ 24 -o ${MY_SAMPLE}_bowtie2.bam -
 
 jgi_summarize_bam_contig_depths --outputDepth ${MY_SAMPLE}_depth.tsv  ${MY_SAMPLE}_bowtie2.bam 
-metabat2 --inFile ${MY_SAMPLE}_assembly/final.contigs.fa --outFile ${MY_SAMPLE}_bowtie_bins/${MY_SAMPLE}_bin -a ${MY_SAMPLE}_depth.tsv  -t 20
+metabat2 --inFile ${MY_SAMPLE}_assembly/final.contigs.fa --outFile ${MY_SAMPLE}_bins/${MY_SAMPLE}_bin -a ${MY_SAMPLE}_depth.tsv  -t $THREADS
 
 ```
 
@@ -261,11 +279,16 @@ Now we'd still like to know what those bins are and how good they are.
 ```bash
 
 export GTDBTK_DATA_PATH=$DB_PATH/gtdbtk/release220
-gtdbtk classify_wf  --genome_dir ${MY_SAMPLE}_bowtie_bins -x .fa --out_dir ${MY_SAMPLE}_classification --cpus 20 --skip_ani_screen
-checkm lineage_wf -x .fa  ${MY_SAMPLE}_bowtie_bins/  ${MY_SAMPLE}_checkm/ > ${MY_SAMPLE}_checkm.txt
+gtdbtk classify_wf  --genome_dir ${MY_SAMPLE}_bins -x .fa --out_dir ${MY_SAMPLE}_classification --cpus $THREADS --skip_ani_screen
 
+checkm2 database --download
 
+checkm2 predict --threads 32 -x .fa --input ${MY_SAMPLE}_bins/  --output-directory ${MY_SAMPLE}_checkm/ 
 ```
+
+Now about getting data out of here, go to the google docs and add fill the information of your MAGs to the appropriate sheet.
+
+
 
 
 
