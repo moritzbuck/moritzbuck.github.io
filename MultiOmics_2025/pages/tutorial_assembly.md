@@ -138,7 +138,19 @@ fastp -w 16 --in1 ${MY_SAMPLE}_R1.fastq.gz --in2 ${MY_SAMPLE}_R2.fastq.gz --out1
 fastqc ${MY_SAMPLE}_clean_R1.fastq.gz ${MY_SAMPLE}_clean_R2.fastq.gz
 ```
 
-Get the output files and have a look at them and discuss in your group. [insert the scp part here] **When you bored of them check-in on the etherpad**
+Get the output files and have a look at them and discuss in your group. 
+, for thaat we will have to download it. My way of choice is using scp, your milage might vary.
+
+```bash
+
+#from you own computer
+
+scp <dardel-username>@dardel.pdc.kth.se:/cfs/klemming/scratch/m/morbu/MultiOmics_2025/work_folder/<dardel-username>/<your-sample>.html <wherever-you-want-to-put-your-file>
+
+```
+
+Make sure the values between `<>` are replaced by the appropriate values (copy and paste is your best friend, just saying...). You can then open the file on your computer.
+**When you bored of them check-in on the etherpad**
 
 
 ### First Taxonomical profiling
@@ -172,17 +184,8 @@ less -S ${MY_SAMPLE}.bracken
 ```
 
 (leave less by pressing `q`). Braken takes the kraken-report and summarises it at a specific taxonomic level, which is useful to make abundance tables, we summed the data to Genus-level. Put the path to this file into the google-doc, so we can later maybe make one of these.
-The last  one is an `html`-file that we can look at with the browser on you computer, for thaat we will have to download it. My way of choice is using scp, your milage might vary.
-
-```bash
-
-#from you own computer
-
-scp <dardel-username>@dardel.pdc.kth.se:/cfs/klemming/scratch/m/morbu/MultiOmics_2025/work_folder/<dardel-username>/<your-sample>.html <wherever-you-want-to-put-your-file>
-
-```
-
-Make sure the values between `<>` are replaced by the appropriate values (copy and paste is your best friend, just saying...). You can then open the file on your computer. From the outputs find the percentage of classified reads and
+The last  one is an `html`-file that we can look at with the browser on you computer.
+From the outputs find the percentage of classified reads and
 add it to the google-sheet. ** Once your wrote the stuff into the google-sheet, check in on the etherpad **
 
 ### Comparing samples
@@ -258,8 +261,8 @@ Now we'd still like to know what those bins are and how good they are.
 ```bash
 
 export GTDBTK_DATA_PATH=$DB_PATH/gtdbtk/release220
-gtdbtk classify_wf  --genome_dir ${samp}_bowtie_bins -x .fa --out_dir ${samp}_classification --cpus 20 --skip_ani_screen
-checkm lineage_wf -x .fa  ${samp}_bowtie_bins/  ${samp}_checkm/ > ${samp}_checkm.txtb
+gtdbtk classify_wf  --genome_dir ${MY_SAMPLE}_bowtie_bins -x .fa --out_dir ${MY_SAMPLE}_classification --cpus 20 --skip_ani_screen
+checkm lineage_wf -x .fa  ${MY_SAMPLE}_bowtie_bins/  ${MY_SAMPLE}_checkm/ > ${MY_SAMPLE}_checkm.txt
 
 
 ```
@@ -268,62 +271,3 @@ checkm lineage_wf -x .fa  ${samp}_bowtie_bins/  ${samp}_checkm/ > ${samp}_checkm
 
 
 
-#### QC the assembly
-
-A variety of tools is available to QC genomic assemblies, however many of them are not appropriate for metagenomic data, as they presuppose a single organism. However for most metagenomic applications, a few factors will already be indicative of the quality of the assembly.
-
-One of the first factors is the amount of reads that align to the assembly. The proportion of reads mapping our assembly gives us a good idea of how representative of the sampled environment the assembly is.
-
-To get this information we will need a mapping tool. We will use `BBmap`. Mappers, like `BBmap`, don't only return the proportion of mapping reads, but also the specific alignments, these are output as SAM-files, a particularly horrible and wasteful file type.
-
-> Using `bbmap.sh` loaded with `module`, use the `bamscript=`-option
-> Map your library to your assembly. What proportion of your reads map to your assembly? Any comments about the size of the SAM-file?
-> Optional : map subsets of the other samples to your assembly, how does it look like? (checkout the `reads` option, and also the  `showprogress` one , mostly because I like it)
-
-SAM-files are HUUUUUGE, we do not like that, BAM-files, the compressed version of SAM is a bit better.
-
-> Use the script written by the `bamscript=` option of `bbmap.sh`.
-> What are the generated files?
-> Keep the BAM-file and other file, we will need them later.
-
-However this does not say anything about the quality of the `contigs` directly, only about how much of the data has been assembled, but it could all just have assembled into very small contigs!
-
-We need to look at how the contigs "look-like". A first simple way of looking at this is to simply do some stats on contig lengths and coverage. There are many ways probably to do this, but we will use a script that has been written by yours truly. We will use this to learn a bit about scripting and stuff.
-
-You can find the script in [here] (../scripts/seq_stats.R), this is a pretty simple `R`-script, make a copy in your working directory.
-
-To run an `R`-script, you can just do:
-
- ```bash
-Rscript my_script.R
- ```
-
- Let's try to run the script you just obtained from a friendly collaborator.
-
- > run the script
-
-Hmmm, you probably got errors. Many scripting languages have systems to load additional packages of functions. For R you have to use the `install.packages` function to get packages from CRAN, also there is something called `bioconductor`.
-
-> Open R
-> install the missing packages, try to run the script
-
-Probably you still got errors ... Well it's probably time to open the script and have a look.
-
-> Fix the script, the error messages obtained should give you an idea of the problem
-> Now it should run, you should get some basic info about your assembly, as well as a pretty plot
-> Optional : Personalize the script a bit. And run the script with all the assemblies.
-
-We have now some basic data about our few simple assemblies.
-
-> Any particular feelings about the obtained assemblies? Also, what about the plot?!
-
-One other way to check out an assembly is to inspect the k-mer graph. Bandage is a cool tool to do that!
-
-> Install Bandage and use [this] (https://github.com/voutcn/megahit/wiki/Visualizing-MEGAHIT's-contig-graph) to inspect your assembly!
-
-#### Alternate assembly.
-
-So we are "lucky" our assemblies look kinda nice ... we can now make some other assemblies. We could normalize the reads to remove micro-diversity and errors. We could split the reads into different subsets (e.g. eukaryotic and prokarotic for example). Or coassemble multiple libraries together.
-
-> Discuss some strategies
-> OPTIONAL : make an other assembly.
