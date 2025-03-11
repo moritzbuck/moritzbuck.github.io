@@ -100,7 +100,7 @@ DB_PATH=$COURSE_ROOT/dbs/
 
 # number of CPUs you can use 
 
-THREADS=32 
+THREADS=128
 # and now create a folder for you to work in
 
 mkdir $OWN_ROOT
