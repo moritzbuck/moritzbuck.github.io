@@ -144,7 +144,6 @@ fastp -w $THREADS --in1 ${MY_SAMPLE}_R1.fastq.gz --in2 ${MY_SAMPLE}_R2.fastq.gz 
 fastqc ${MY_SAMPLE}_clean_R1.fastq.gz ${MY_SAMPLE}_clean_R2.fastq.gz
 ```
 
-Get the output files and have a look at them and discuss in your group. 
 
 
 ### Short interlude on checking on results
