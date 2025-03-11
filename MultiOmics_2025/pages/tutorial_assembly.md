@@ -294,6 +294,8 @@ metabat2 --inFile ${MY_SAMPLE}_assembly/final.contigs.fa --outFile ${MY_SAMPLE}_
 
 Hopefully you got at least a bin out (I cheated, made sure all have a bin at least)
 
+**Let us know you got here!**
+
 Now we'd still like to know what those bins are and how good they are.
 
 
@@ -309,7 +311,7 @@ checkm2 predict --threads 32 -x .fa --input ${MY_SAMPLE}_bins/  --output-directo
 
 Now about getting data out of here, go to the google docs and fill in the information of your MAGs to the appropriate sheet.
 
-
+**Great job, you got through the main part of the tutorial, go brag on etherpad**
 [insert the closing lecture]
 
 
