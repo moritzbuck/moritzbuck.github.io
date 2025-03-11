@@ -24,7 +24,7 @@ Now let's connect to one of our reserved nodes:
 ```bash
 
 # book a part of a node from the reservation
-salloc -t 10:00:00 -c 32 -A edu25.slu -p shared --res edu25-slu-2025-03-11
+salloc -t 10:00:00 -c 32 -A edu25.slu -p main --res edu25-slu-2025-03-11
 
 # check the name of the node
 squeue -u <username> | grep shared
