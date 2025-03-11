@@ -33,7 +33,7 @@ squeue -u <username> | grep shared
 ssh nid<node number>
 ```
 
-** if your prompt looks something like `<username>@nid0012345` let the etherpad know that you got on a node **
+**f your prompt looks something like `<username>@nid0012345` let the etherpad know that you got on a node**
 
 Let's navigate to everyones working folder, we do not have enough space in our homes to do the work so we will work on the so-called `scratch`-partition, a shared 'hard-drive' that everyone can use, but is occasionally emptied (data supposedly gets deleted after 30 days), so be sure to copy anything you wanna keep back to a safer place:
 
@@ -70,7 +70,7 @@ We need to set up a few things
 rm $CONDA_PREFIX/.condarc
 
 # install mamba to make things faster
-conda install mamba
+conda install -c conda-froge mamba
 
 
 # install all the things
