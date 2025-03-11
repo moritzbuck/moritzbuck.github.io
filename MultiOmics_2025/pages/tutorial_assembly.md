@@ -70,7 +70,7 @@ We need to set up a few things
 rm $CONDA_PREFIX/.condarc
 
 # install mamba to make things faster
-conda install -c conda-froge mamba
+conda install -c conda-forge mamba
 
 
 # install all the things
