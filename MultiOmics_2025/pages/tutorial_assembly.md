@@ -165,7 +165,7 @@ You should see some structured text/data. You can now go up and down with usual 
 `less` is cool, it can also handle `gzip`-files, if they compress a single text-file, you just have to add a `z` in front.
 
 ```bash
-zless -S ${MY_SAMPLE}_clean_R1.fastq.gz
+zless ${MY_SAMPLE}_clean_R1.fastq.gz
 ```
 
 should show you one of the two generate `FASTQ`-files! As mentioned, `html`-files, e.g. "webpages", are also text-files.
